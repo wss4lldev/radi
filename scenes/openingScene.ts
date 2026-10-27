@@ -221,7 +221,7 @@ export const paintComicBubble = (context: Context, bubbleParts: BuildPath[], out
   context.restore()
   for (const bubblePart of bubbleParts) paintLine(context, OUTLINE, outlineWidth * 2, bubblePart)
   for (const bubblePart of bubbleParts) paintFill(context, WHITE, bubblePart)
-  context.font = `${fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+  context.font = `${fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
   context.textAlign = "center"
   context.textBaseline = "middle"
   context.fillStyle = OUTLINE
@@ -229,8 +229,13 @@ export const paintComicBubble = (context: Context, bubbleParts: BuildPath[], out
   context.fillText(lines[1], centerX, centerY + fontSize * 0.6)
 }
 
+const BUBBLE_FULL_SIZE_HEIGHT = 800
+
+export const comicBubbleWidth = (width: number, height: number, widthShare: number, maxWidth: number) =>
+  Math.min(width * widthShare, maxWidth * Math.min(1, height / BUBBLE_FULL_SIZE_HEIGHT))
+
 const scrollHintGeometry = (width: number, height: number, time: number) => {
-  const bubbleWidth = Math.min(width * 0.72, 560)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.72, 560)
   return {
     bubbleWidth,
     bubbleHeight: bubbleWidth * 0.42,
@@ -362,8 +367,8 @@ const settledStretch = (stretchY: number, stage: number) => 1 + (stretchY - 1) *
 export const radiScale = (width: number, height: number) => Math.min(height * 0.34, width * 0.75) / 125
 const radiFeetY = (height: number) => height * 0.88
 
-const greetingBubbleGeometry = (width: number, radiX: number, feetY: number, scale: number) => {
-  const bubbleWidth = Math.min(width * 0.38, 340)
+const greetingBubbleGeometry = (width: number, height: number, radiX: number, feetY: number, scale: number) => {
+  const bubbleWidth = comicBubbleWidth(width, height, 0.38, 340)
   return {
     bubbleWidth,
     bubbleHeight: bubbleWidth * 0.7,
@@ -374,13 +379,13 @@ const greetingBubbleGeometry = (width: number, radiX: number, feetY: number, sca
 
 export const greetingButtonLayout = (width: number, height: number, progress: number): BubbleButtonLayout => {
   if (progress < WAVE_START) return null
-  const { bubbleWidth, bubbleHeight, centerX, centerY } = greetingBubbleGeometry(width, width / 2, radiFeetY(height), radiScale(width, height))
+  const { bubbleWidth, bubbleHeight, centerX, centerY } = greetingBubbleGeometry(width, height, width / 2, radiFeetY(height), radiScale(width, height))
   return { centerX, centerY: centerY + bubbleHeight * 0.2, width: bubbleWidth * 0.72, fontSize: Math.max(11, bubbleWidth * 0.065) }
 }
 
-const drawGreetingBubble = (context: Context, width: number, radiX: number, feetY: number, scale: number, popScale: number, { lines, heightRatio, textRatio }: BubbleText) => {
+const drawGreetingBubble = (context: Context, width: number, height: number, radiX: number, feetY: number, scale: number, popScale: number, { lines, heightRatio, textRatio }: BubbleText) => {
   if (popScale <= 0) return
-  const geometry = greetingBubbleGeometry(width, radiX, feetY, scale)
+  const geometry = greetingBubbleGeometry(width, height, radiX, feetY, scale)
   const { bubbleWidth, centerX, centerY } = geometry
   const bubbleHeight = geometry.bubbleHeight * heightRatio
   context.save()
@@ -612,6 +617,7 @@ const drawSkippingRadi = (context: Context, width: number, height: number, time:
   drawGreetingBubble(
     context,
     width,
+    height,
     radiX,
     feetY,
     scale,

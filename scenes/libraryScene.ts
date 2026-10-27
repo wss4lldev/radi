@@ -5,7 +5,7 @@ import { drawBatMark, drawRadi, drawStarSparkle, OUTLINE_WIDTH, paintTube, RAINB
 import { batmanRadiLook, bookwormRadiLook, unicornRadiLook } from "@/characters/radiConcepts"
 import { drawRadiSide } from "@/characters/radiSide"
 import { onLayersReleased, paintCachedLayer } from "@/scenes/layerCache"
-import { easeOut, easeOutBack, mix, mixPoint, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
+import { easeOut, easeOutBack, mix, mixPoint, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
 
 const OUTLINE = "#2b1d1a"
 const WALL = "#f6e2bc"
@@ -1141,9 +1141,9 @@ const drawCrashRadi = (context: Context, landingX: number, floorY: number, scale
   context.restore()
 }
 
-const drawSpeechBubble = (context: Context, width: number, radiX: number, floorY: number, scale: number, popScale: number) => {
+const drawSpeechBubble = (context: Context, width: number, height: number, radiX: number, floorY: number, scale: number, popScale: number) => {
   if (popScale <= 0) return
-  const bubbleWidth = Math.min(width * 0.4, 360)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.4, 360)
   const bubbleHeight = bubbleWidth * 0.5
   const centerX = Math.min(width - bubbleWidth / 2 - 12, radiX + bubbleWidth * 0.45)
   const centerY = Math.max(bubbleHeight / 2 + 12, floorY - 125 * scale - bubbleHeight * 0.4)
@@ -1517,7 +1517,7 @@ const drawQuizPanel = (
   if (config.questionLines.length > 0) {
     const headerInnerWidth = card.cardWidth - 32 - 36
     const headerInnerHeight = Math.max(12, headerHeight - 18)
-    context.font = `bold ${questionSize}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${questionSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     const longest = Math.max(...config.questionLines.map((line) => context.measureText(line).width))
     if (longest > headerInnerWidth) questionSize *= headerInnerWidth / longest
     const blockHeight = questionSize * (1 + 1.15 * (config.questionLines.length - 1))
@@ -1540,7 +1540,7 @@ const drawQuizPanel = (
     context.roundRect(left + 16, top + 16, card.cardWidth - 32, headerHeight, 14)
     context.clip()
     context.fillStyle = OUTLINE
-    context.font = `bold ${questionSize}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${questionSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     context.textAlign = "center"
     context.textBaseline = "middle"
     const questionTop = top + 16 + headerHeight * 0.5 - ((config.questionLines.length - 1) * fittedGap) / 2
@@ -1558,7 +1558,7 @@ const drawQuizPanel = (
     if (!showAnswers) continue
     paintShape(context, "#7b5cff", (path) => path.roundRect(rowLeft + 8, row.centerY - row.height * 0.32, row.height * 0.64, row.height * 0.64, 8))
     context.fillStyle = WHITE
-    context.font = `bold ${row.fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${row.fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     context.textAlign = "center"
     context.textBaseline = "middle"
     context.fillText(row.letter, rowLeft + 8 + row.height * 0.32, row.centerY)
@@ -1566,10 +1566,10 @@ const drawQuizPanel = (
     context.textAlign = "left"
     const nameRoom = row.width - row.height * 1.15
     let nameSize = row.fontSize
-    context.font = `bold ${nameSize}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${nameSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     const measuredName = context.measureText(row.name).width / Math.max(shown, 0.01)
     if (measuredName > nameRoom) nameSize *= nameRoom / measuredName
-    context.font = `bold ${nameSize}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${nameSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     context.fillText(row.name, rowLeft + row.height * 0.95, row.centerY)
   }
   context.restore()
@@ -2309,7 +2309,7 @@ export const drawLibraryScene = (
   else drawSideBookcases(context)
   if (exitSeconds !== null && exitHero !== null && sceneSeconds >= WALK_BACK_END) drawHeroExit(context, width, height, floorY, landingX, scale, exitSeconds, exitHero)
   drawDust(context, landingX, floorY, sceneSeconds)
-  drawSpeechBubble(context, width, landingX, floorY, scale, easeOutBack(stageProgress(sceneSeconds, SAY_START, SAY_START + BUBBLE_POP_SECONDS)) * (1 - stageProgress(sceneSeconds, SAY_END - BUBBLE_HIDE_SECONDS, SAY_END)))
+  drawSpeechBubble(context, width, height, landingX, floorY, scale, easeOutBack(stageProgress(sceneSeconds, SAY_START, SAY_START + BUBBLE_POP_SECONDS)) * (1 - stageProgress(sceneSeconds, SAY_END - BUBBLE_HIDE_SECONDS, SAY_END)))
   drawLibraryQuizzes(
     context,
     width,

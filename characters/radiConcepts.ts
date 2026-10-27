@@ -252,7 +252,7 @@ const drawConceptPanel = (
   panel.drawFront(context, frontFeetX, feetY, characterScale)
   panel.drawSide(context, sideFeetX, feetY, characterScale)
 
-  context.font = `${fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+  context.font = `${fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
   context.textAlign = "center"
   context.textBaseline = "middle"
   context.fillStyle = "#2b1d1a"

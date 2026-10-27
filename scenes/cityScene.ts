@@ -14,6 +14,7 @@ import {
   easeOutBack,
   mix,
   mixPoint,
+  comicBubbleWidth,
   paintComicBubble,
   paintIris,
   radiScale,
@@ -425,7 +426,7 @@ const drawCarMusic = (context: Context, width: number, height: number, time: num
   context.save()
   context.translate(carX, groundY)
   context.scale(scale, scale)
-  context.font = '16px "Comic Sans MS", "Comic Sans", cursive'
+  context.font = '16px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive'
   context.textAlign = "center"
   context.lineWidth = 3
   context.strokeStyle = OUTLINE
@@ -462,7 +463,7 @@ const drawKiraWoof = (context: Context, width: number, height: number, kiraSecon
     }
     path.closePath()
   })
-  context.font = 'bold 12px "Comic Sans MS", "Comic Sans", cursive'
+  context.font = 'bold 12px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive'
   context.textAlign = "center"
   context.textBaseline = "middle"
   context.fillStyle = "#e8262e"
@@ -600,7 +601,7 @@ const drawCityRadi = (context: Context, width: number, height: number, time: num
 
 const coolBubbleGeometry = (width: number, height: number) => {
   const { scale, radiX, feetY } = landedRadiPosition(width, height)
-  const bubbleWidth = Math.min(width * 0.4, 360)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.4, 360)
   return {
     bubbleWidth,
     bubbleHeight: bubbleWidth * 0.55,
@@ -631,7 +632,7 @@ const drawCoolBubble = (context: Context, width: number, height: number, popScal
 
 const anywayBubbleGeometry = (width: number, height: number) => {
   const { scale, radiX, feetY } = benchRadiPosition(width, height)
-  const bubbleWidth = Math.min(width * 0.3, 260)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.3, 260)
   const bubbleHeight = bubbleWidth * 0.55
   return {
     bubbleWidth,
@@ -664,7 +665,7 @@ const drawAnywayBubble = (context: Context, width: number, height: number, popSc
 const drawZhupkiBubble = (context: Context, width: number, height: number, popScale: number) => {
   if (popScale <= 0) return
   const { scale, radiX, feetY } = carSeatPosition(width, height)
-  const bubbleWidth = Math.min(width * 0.36, 320)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.36, 320)
   const bubbleHeight = bubbleWidth * 0.55
   const centerX = Math.min(width - bubbleWidth / 2 - 12, radiX + 70 * scale + bubbleWidth / 2)
   const centerY = feetY - 110 * scale
@@ -697,7 +698,7 @@ const drawSpeedBar = (context: Context, width: number, gauge: number) => {
   context.lineWidth = 3
   context.strokeStyle = OUTLINE
   paintShape(context, "#ffffff", (path) => path.roundRect(panelX, SPEED_BAR_TOP, panelWidth, panelHeight, 14))
-  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
   context.textAlign = "left"
   context.textBaseline = "top"
   context.fillStyle = OUTLINE

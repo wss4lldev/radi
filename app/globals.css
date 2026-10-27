@@ -5,7 +5,7 @@ body {
   overflow: hidden;
   background: #000000;
   color: #ffffff;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
 }
 
 html[data-scroll-open] {
@@ -43,7 +43,7 @@ canvas {
   border-radius: 999px;
   background: #ffd23f;
   color: #2b1d1a;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
   font-size: 16px;
   cursor: pointer;
 }
@@ -76,7 +76,7 @@ canvas {
   border-radius: 10px;
   background: none;
   color: #2b1d1a;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
   font-size: 16px;
   text-align: left;
   cursor: pointer;
@@ -96,7 +96,7 @@ canvas {
   border: none;
   background: none;
   color: #e63946;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
   line-height: 1.2;
   text-align: center;
   cursor: pointer;
@@ -163,7 +163,7 @@ canvas {
   border-radius: 999px;
   background: #ffd23f;
   color: #2b1d1a;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
   font-size: 16px;
   cursor: pointer;
 }
@@ -188,7 +188,7 @@ canvas {
   background: linear-gradient(90deg, #ff3fa4, #9b5de5, #3fd0ff, #ffd23f, #ff3fa4);
   background-size: 300% 100%;
   color: #ffffff;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
   font-weight: bold;
   letter-spacing: 0.04em;
   white-space: nowrap;

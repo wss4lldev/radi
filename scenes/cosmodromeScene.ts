@@ -5,7 +5,7 @@ import { drawRadi, drawStarSparkle, RAINBOW, type Point, type RadiExpression } f
 import { astronautRadiLook, sunnyRadiLook, unicornRadiLook } from "@/characters/radiConcepts"
 import { drawShadesDudeFront } from "@/characters/shadesDude"
 import { easeInOut, seededRandom } from "@/scenes/libraryScene"
-import { bounce, clampToUnit, drawCloud, easeOut, easeOutBack, heartPath, mix, mixPoint, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
+import { bounce, clampToUnit, drawCloud, easeOut, easeOutBack, heartPath, mix, mixPoint, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
 
 type Dish = { x: number; size: number; tilt: number; phase: number }
 type Block = readonly [number, number, number]
@@ -940,17 +940,17 @@ const drawBubble = (context: Context, centerX: number, centerY: number, bubbleWi
   context.restore()
 }
 
-const bubbleWidthFor = (width: number) => Math.min(width * 0.4, 360)
+const bubbleWidthFor = (width: number, height: number) => comicBubbleWidth(width, height, 0.4, 360)
 
-const drawRadiBubble = (context: Context, width: number, radiX: number, feetY: number, scale: number, sceneSeconds: number) => {
-  const bubbleWidth = bubbleWidthFor(width)
+const drawRadiBubble = (context: Context, width: number, height: number, radiX: number, feetY: number, scale: number, sceneSeconds: number) => {
+  const bubbleWidth = bubbleWidthFor(width, height)
   const pop = easeOutBack(stageProgress(sceneSeconds, TURN_END, BUBBLE_POP_END)) * (1 - easeOut(stageProgress(sceneSeconds, RADI_BUBBLE_HIDE_START, RADI_BUBBLE_HIDE_END)))
   drawBubble(context, Math.min(width - bubbleWidth / 2 - 12, radiX + 44 * scale + bubbleWidth / 2), feetY - 118 * scale, bubbleWidth, bubbleWidth * 0.6, pop, BUBBLE_LINES)
 }
 
-const drawExclaimBubble = (context: Context, width: number, radiX: number, feetY: number, scale: number, wishSeconds: number | null) => {
+const drawExclaimBubble = (context: Context, width: number, height: number, radiX: number, feetY: number, scale: number, wishSeconds: number | null) => {
   if (wishSeconds === null) return
-  const bubbleWidth = bubbleWidthFor(width) * 0.85
+  const bubbleWidth = bubbleWidthFor(width, height) * 0.85
   const pop = easeOutBack(stageProgress(wishSeconds, EXCLAIM_HOP_START + 0.15, EXCLAIM_POP_END)) * (1 - easeOut(stageProgress(wishSeconds, EXCLAIM_HIDE_START, EXCLAIM_HIDE_END)))
   drawBubble(context, Math.min(width - bubbleWidth / 2 - 12, radiX + 44 * scale + bubbleWidth / 2), feetY - 125 * scale, bubbleWidth, bubbleWidth * 0.6, pop, EXCLAIM_LINES)
 }
@@ -959,7 +959,7 @@ const wishBubbleGeometry = (width: number, height: number) => {
   const scale = radiScale(width, height)
   const feetY = height * RADI_FEET
   const radiX = width / 2
-  const bubbleWidth = bubbleWidthFor(width)
+  const bubbleWidth = bubbleWidthFor(width, height)
   const bubbleHeight = bubbleWidth * 0.65
   return {
     bubbleWidth,
@@ -1693,9 +1693,9 @@ export const drawCosmodromeScene = (context: Context, width: number, height: num
   drawBreath(context, [radiX + 12 * scale, feetY - 54 * scale], [candlesX - camX, candlesY], scale, wishSeconds)
   drawKissSmack(context, radiX, feetY, scale, sceneSeconds)
   drawKissHearts(context, radiX, feetY, scale, time, sceneSeconds)
-  drawRadiBubble(context, width, radiX, feetY, scale, sceneSeconds)
+  drawRadiBubble(context, width, height, radiX, feetY, scale, sceneSeconds)
   drawWishBubble(context, width, height, sceneSeconds, wishSeconds)
-  drawExclaimBubble(context, width, radiX, feetY, scale, wishSeconds)
+  drawExclaimBubble(context, width, height, radiX, feetY, scale, wishSeconds)
   drawTransformSmoke(context, radiX, feetY - 55 * scale, scale, wishSeconds)
   drawStarBurst(context, radiX, feetY - 60 * scale, scale, time, wishSeconds)
   context.restore()
@@ -1731,10 +1731,10 @@ const drawEndingTitle = (context: Context, width: number, height: number, sinceB
   if (sinceBlack <= 0) return
   const letters = [...ENDING_TEXT]
   let fontSize = Math.min(width * 0.085, height * 0.14)
-  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
   const naturalWidth = context.measureText(ENDING_TEXT).width
   if (naturalWidth > width * ENDING_MAX_WIDTH) fontSize *= (width * ENDING_MAX_WIDTH) / naturalWidth
-  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", cursive`
+  context.font = `bold ${fontSize}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
   context.textBaseline = "middle"
   context.textAlign = "center"
   context.lineJoin = "round"

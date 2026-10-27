@@ -188,7 +188,7 @@ export const drawClubLights = (context: Context, club: ClubPlacement, time: numb
         context.translate(30, 49)
         context.shadowColor = "#ff3fa4"
         context.shadowBlur = 18
-        context.font = 'bold 10px "Comic Sans MS", "Comic Sans", cursive'
+        context.font = 'bold 10px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive'
         context.textAlign = "center"
         context.textBaseline = "middle"
         context.fillStyle = Math.sin(time * 6) > -0.7 ? "#ff7fc8" : "#ffffff"
@@ -220,7 +220,7 @@ export const drawClubLights = (context: Context, club: ClubPlacement, time: numb
             paintFill(ballContext, "rgba(255, 255, 255, 0.9)", ellipsePath(ballX - 2, ballY - 2, 1.4, 1.4))
           },
         })
-        context.font = '9px "Comic Sans MS", "Comic Sans", cursive'
+        context.font = '9px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive'
         context.textAlign = "center"
         for (let note = 0; note < NOTE_COUNT; note += 1) {
           const age = (time * 0.6 + note / NOTE_COUNT) % 1

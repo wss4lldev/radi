@@ -6,7 +6,7 @@ import { folkDanceRadiLook, gaidaRadiLook } from "@/characters/radiConcepts"
 import { paintSprite, prepareSceneSprites, releaseSceneSprites, type SpriteBounds } from "@/characters/sprites"
 import { onLayersReleased } from "@/scenes/layerCache"
 import { easeInOut, mixHands, seededRandom } from "@/scenes/libraryScene"
-import { bounce, clampToUnit, drawCloud, drawSun, easeOut, easeOutBack, mix, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
+import { bounce, clampToUnit, drawCloud, drawSun, easeOut, easeOutBack, mix, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
 
 type Circle = readonly [number, number, number]
 type Cover = "roundTree" | "pine" | "bush"
@@ -682,7 +682,7 @@ const drawFolkSwirl = (context: Context, width: number, height: number, centerX:
 
 const drawScrollDanceHint = (context: Context, width: number, height: number, time: number, appear: number) => {
   if (appear <= 0.01) return
-  const bubbleWidth = Math.min(width * 0.5, 380)
+  const bubbleWidth = comicBubbleWidth(width, height, 0.5, 380)
   const centerX = width / 2
   const centerY = height * 0.22 + Math.sin(time * 1.6) * height * 0.008
   context.save()

@@ -78,7 +78,7 @@ export const drawRocketQuickTime = (
     paintShape(context, KEY_SIDE, (path) => path.roundRect(-half, -half + depth, keySize, keySize, corner))
     paintShape(context, face, (path) => path.roundRect(-half, -half, keySize, keySize - depth * 0.4, corner))
     context.fillStyle = OUTLINE
-    context.font = `bold ${keySize * 0.6}px "Comic Sans MS", "Comic Sans", cursive`
+    context.font = `bold ${keySize * 0.6}px "Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
     context.textAlign = "center"
     context.textBaseline = "middle"
     context.fillText(QUICK_TIME_KEYS[index], 0, -depth * 0.3)

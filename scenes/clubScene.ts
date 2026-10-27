@@ -7,7 +7,7 @@ import { prepareSceneSprites, releaseSceneSprites } from "@/characters/sprites"
 import { drawExhaust } from "@/scenes/cityScene"
 import { onLayersReleased } from "@/scenes/layerCache"
 import { partyColor } from "@/scenes/nightClub"
-import { easeOut, easeOutBack, mix, mixPoint, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
+import { easeOut, easeOutBack, mix, mixPoint, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
 
 type PartyMove = "handsUp" | "pump" | "sway" | "drink" | "shuffle"
 type Dancer = { x: number; isFront: boolean; person: PartyPerson; move: PartyMove; phase: number }
@@ -583,8 +583,8 @@ const clubRadiPosition = (width: number, height: number, clubSeconds = WALK_IN_E
   }
 }
 
-const radiBubbleGeometry = (width: number, radiX: number, feetY: number, scale: number) => {
-  const bubbleWidth = Math.min(width * 0.44, 380)
+const radiBubbleGeometry = (width: number, height: number, radiX: number, feetY: number, scale: number) => {
+  const bubbleWidth = comicBubbleWidth(width, height, 0.44, 380)
   const bubbleHeight = bubbleWidth * 0.5
   return {
     bubbleWidth,
@@ -619,13 +619,13 @@ export const smoothMovesButtonTransform = (move: SpecialMove | null, fontSize: n
 export const letsDanceButtonLayout =(width: number, height: number, clubSeconds: number, letsDanceSeconds: number | null): BubbleButtonLayout => {
   if (letsDanceSeconds !== null || clubSeconds < FUN_BUBBLE_START + BUBBLE_POP_SECONDS) return null
   const { scale, radiX, feetY } = clubRadiPosition(width, height)
-  const { bubbleWidth, fontSize, centerX, centerY } = radiBubbleGeometry(width, radiX, feetY, scale)
+  const { bubbleWidth, fontSize, centerX, centerY } = radiBubbleGeometry(width, height, radiX, feetY, scale)
   return { centerX, centerY: centerY + fontSize * LETS_DANCE_BUTTON_OFFSET, width: bubbleWidth * 0.6, fontSize }
 }
 
-const drawRadiBubble = (context: Context, width: number, radiX: number, feetY: number, scale: number, popScale: number, lines: readonly [string, string], textOffsetY = 0) => {
+const drawRadiBubble = (context: Context, width: number, height: number, radiX: number, feetY: number, scale: number, popScale: number, lines: readonly [string, string], textOffsetY = 0) => {
   if (popScale <= 0) return
-  const { bubbleWidth, bubbleHeight, fontSize, centerX, centerY } = radiBubbleGeometry(width, radiX, feetY, scale)
+  const { bubbleWidth, bubbleHeight, fontSize, centerX, centerY } = radiBubbleGeometry(width, height, radiX, feetY, scale)
   const headX = radiX + 12 * scale - centerX
   const headY = feetY - 90 * scale - centerY
   context.save()
@@ -670,8 +670,8 @@ export const drawClubScene = (context: Context, width: number, height: number, t
   withMoveFrame(context, radiFrame, radiX, feetY, BODY_HEIGHT * scale, () => drawClubRadi(context, radiX, feetY, scale, grooveTime, clubSeconds, radiFrame))
   drawLightBeams(context, width, height, grooveTime, ballX, ballY)
   drawCrowd(context, width, height, grooveTime, scale, true, amazement, specialMove)
-  drawRadiBubble(context, width, radiX, feetY, scale, bubblePopScale(clubSeconds, FUN_BUBBLE_START, FUN_BUBBLE_END), ["And I like to have fun", "and dance!"], FUN_BUBBLE_TEXT_OFFSET)
-  drawRadiBubble(context, width, radiX, feetY, scale, bubblePopScale(clubSeconds, ONLY_DANCE_BUBBLE_START, ONLY_DANCE_BUBBLE_END), ["But it's not all", "fun and games..."])
+  drawRadiBubble(context, width, height, radiX, feetY, scale, bubblePopScale(clubSeconds, FUN_BUBBLE_START, FUN_BUBBLE_END), ["And I like to have fun", "and dance!"], FUN_BUBBLE_TEXT_OFFSET)
+  drawRadiBubble(context, width, height, radiX, feetY, scale, bubblePopScale(clubSeconds, ONLY_DANCE_BUBBLE_START, ONLY_DANCE_BUBBLE_END), ["But it's not all", "fun and games..."])
   context.restore()
   if (flash > 0) paintFill(context, `rgba(255, 255, 255, ${flash})`, (path) => path.rect(0, 0, width, height))
   const fullRadius = Math.hypot(width, height)
