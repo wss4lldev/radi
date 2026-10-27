@@ -1,0 +1,309 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #000000;
+  color: #ffffff;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+html[data-scroll-open] {
+  height: auto;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+html[data-scroll-open]::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-scroll-open] body {
+  height: auto;
+  overflow: visible;
+}
+
+canvas {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+}
+
+.concepts-button,
+.scene-select {
+  position: fixed;
+  z-index: 2;
+  top: 16px;
+  right: 16px;
+  padding: 8px 16px;
+  border: 3px solid #2b1d1a;
+  border-radius: 999px;
+  background: #ffd23f;
+  color: #2b1d1a;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.concepts-button:hover,
+.concepts-button:focus-visible,
+.scene-select:hover,
+.scene-select:focus-visible {
+  background: #ffe066;
+}
+
+.more-button {
+  position: fixed;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  background: none;
+  color: #e63946;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.more-button:hover,
+.more-button:focus-visible {
+  text-decoration: underline;
+}
+
+.more-button[data-visible="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.more-button.start-button[data-visible="false"] {
+  transition: none;
+}
+
+.quiz-answer {
+  position: fixed;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.quiz-answer:hover,
+.quiz-answer:focus-visible {
+  cursor: pointer;
+}
+
+.quiz-answer[data-visible="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.film-scroll {
+  height: 400vh;
+}
+.ending-menu {
+  position: fixed;
+  z-index: 2;
+  top: 18%;
+  left: 50%;
+  display: flex;
+  gap: 16px;
+  transform: translateX(-50%);
+  transition: opacity 0.6s;
+}
+
+.ending-menu[data-visible="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ending-button {
+  padding: 8px 16px;
+  border: 3px solid #2b1d1a;
+  border-radius: 999px;
+  background: #ffd23f;
+  color: #2b1d1a;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.ending-button:hover,
+.ending-button:focus-visible {
+  background: #ffe066;
+}
+
+.ending-scene-select {
+  position: static;
+}
+
+.smooth-moves-button {
+  position: fixed;
+  z-index: 2;
+  box-sizing: border-box;
+  translate: -50% -50%;
+  padding: 0.45em 0.6em;
+  border: 4px solid #ffffff;
+  border-radius: 0;
+  background: linear-gradient(90deg, #ff3fa4, #9b5de5, #3fd0ff, #ffd23f, #ff3fa4);
+  background-size: 300% 100%;
+  color: #ffffff;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px #ff3fa4, 0 0 16px #ffd23f, 0 3px 0 #2b1d1a;
+  cursor: pointer;
+  animation:
+    smooth-moves-colors 1.2s linear infinite,
+    smooth-moves-flash 0.35s steps(2, jump-none) infinite,
+    smooth-moves-shake 0.38s infinite,
+    smooth-moves-vibrate 0.09s linear infinite;
+  transition: opacity 0.35s, filter 0.35s;
+}
+
+.smooth-moves-button:hover,
+.smooth-moves-button:focus-visible {
+  filter: brightness(1.25);
+  outline: none;
+}
+
+.smooth-moves-button[data-visible="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.smooth-moves-button[data-busy="true"] {
+  filter: saturate(0.5) brightness(0.8);
+  cursor: default;
+}
+
+@keyframes smooth-moves-colors {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+@keyframes smooth-moves-flash {
+  from {
+    border-color: #ffffff;
+    box-shadow: 0 0 10px 4px rgba(255, 63, 164, 0.9), 0 0 30px 10px rgba(63, 208, 255, 0.6), 0 0 60px 18px rgba(255, 63, 164, 0.35);
+  }
+  to {
+    border-color: #ffe23f;
+    box-shadow: 0 0 18px 8px rgba(255, 226, 63, 1), 0 0 44px 16px rgba(155, 93, 229, 0.8), 0 0 80px 26px rgba(63, 208, 255, 0.45);
+  }
+}
+
+@keyframes smooth-moves-shake {
+  0%,
+  100% {
+    transform: translate(-0.55em, 0.2em) rotate(-8deg) scale(1.04, 0.96);
+    animation-timing-function: ease-out;
+  }
+  25% {
+    transform: translate(0, -0.45em) rotate(0deg) scale(0.97, 1.05);
+    animation-timing-function: ease-in;
+  }
+  50% {
+    transform: translate(0.55em, 0.2em) rotate(8deg) scale(1.04, 0.96);
+    animation-timing-function: ease-out;
+  }
+  75% {
+    transform: translate(0, -0.45em) rotate(0deg) scale(0.97, 1.05);
+    animation-timing-function: ease-in;
+  }
+}
+
+@keyframes smooth-moves-vibrate {
+  0%,
+  100% {
+    rotate: 0deg;
+    scale: 1;
+  }
+  25% {
+    rotate: 2.5deg;
+    scale: 1.03;
+  }
+  50% {
+    rotate: -1.5deg;
+    scale: 0.98;
+  }
+  75% {
+    rotate: -2.5deg;
+    scale: 1.02;
+  }
+}
+
+@keyframes smooth-moves-sway {
+  0%,
+  100% {
+    transform: translate(-0.25em, 0.08em) rotate(-4deg);
+  }
+  25%,
+  75% {
+    transform: translate(0, -0.18em) rotate(0deg);
+  }
+  50% {
+    transform: translate(0.25em, 0.08em) rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smooth-moves-button {
+    animation:
+      smooth-moves-flash 0.9s ease-in-out infinite alternate,
+      smooth-moves-sway 1.6s ease-in-out infinite;
+  }
+}
+
+.rotate-notice {
+  display: none;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-notice {
+    display: flex;
+    position: fixed;
+    z-index: 10;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 16px;
+    background: #23245e;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .rotate-phone {
+    width: 56px;
+    height: 96px;
+    box-sizing: border-box;
+    border: 5px solid #ffffff;
+    border-radius: 12px;
+    background: #ffd23f;
+    animation: rotate-phone 2s ease-in-out infinite;
+  }
+}
+
+@keyframes rotate-phone {
+  0%,
+  20% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}

@@ -1,0 +1,49 @@
+---
+description: Working agreement for Cartoonie. Ask before edits, commits, and verification.
+alwaysApply: true
+---
+
+# Local agent rules
+
+These rules apply to this project and can be committed with it.
+
+## Always do this first
+
+- Before making changes, read this file and follow it.
+
+## Working agreement
+
+- Do not modify files unless I explicitly ask you to.
+- Present the solution first. Make changes only after I approve or explicitly request implementation.
+- Reading files, searching the repo, and running non-mutating checks is allowed when needed.
+- Use the shortest, simplest, cleanest approach that solves the request.
+- Prefer small, safe changes.
+- Keep changes scoped to the request. No drive-by refactors.
+- When adding code, do not add comments explaining it.
+- If you notice unrelated issues, mention them but do not change them unless asked.
+- Do not add secrets, credentials, tokens, or local environment files.
+- Do not create commits, amend commits, or change git history unless I explicitly ask.
+
+## Code style
+
+- Prefer arrow functions for new JavaScript and TypeScript code.
+- Do not use arrow functions when they are technically inappropriate, such as object methods, constructors, generators, or code that requires its own `this`, `arguments`, or `super`.
+- Before creating a new function, check whether an equivalent function already exists.
+- Use clear, descriptive function and variable names that explain what they represent or what the function does.
+- Avoid vague names such as `data`, `item`, `value`, `handle`, `process`, or `doThing` unless the surrounding context makes the meaning obvious.
+- Follow the existing structure and architecture of the project when it aligns with the good practices described in this file.
+- Do not preserve bad patterns only for consistency. If the existing structure conflicts with these rules, mention the conflict and choose the safer, cleaner approach.
+- Do not use the `any` type in TypeScript.
+
+## Verification
+
+- Before running any verification command, ask me first.
+- Recommend the smallest relevant check available, such as a targeted test, typecheck, lint command, or build command.
+- Run the check only after I approve it.
+- If no check is available, say so.
+- If a check fails because of unrelated existing issues, report that clearly.
+
+## When unsure
+
+- Say that you are unsure.
+- If I ask you to choose anyway, pick the least risky option, implement it, and verify with a quick check if available.
