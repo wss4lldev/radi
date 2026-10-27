@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { drawRadiConcepts } from "@/characters/radiConcepts"
 import { anywayButtonLayout, CAR_ENTRANCE_SOUND, cityWalkSteps, CITY_SCENE_END, drawCityScene, DRIVE_CRUISE_SECONDS, DRIVE_MAX_BOOST, DRIVE_READY_SECONDS, KIRA_POP_PROGRESS, KIRA_WOOF_START, RADI_EXIT_START } from "@/scenes/cityScene"
-import { CLUB_SCENE_END, clubWalkSteps, drawClubScene, isSmoothMovesOpen, LAUNCH_START, letsDanceButtonLayout, playedClubSeconds, smoothMovesButtonLayout, SPECIAL_MOVE_SECONDS, type SpecialMoveKind } from "@/scenes/clubScene"
+import { CLUB_SCENE_END, clubWalkSteps, drawClubScene, isSmoothMovesOpen, LAUNCH_START, letsDanceButtonLayout, playedClubSeconds, smoothMovesButtonLayout, smoothMovesButtonTransform, SPECIAL_MOVE_SECONDS, type SpecialMoveKind } from "@/scenes/clubScene"
 import { FILM_SCENES } from "@/scenes/filmScenes"
 import { activeQuickTime, drawRocketQuickTime, isInGoodWindow, missedQuickTime, QUICK_TIME_KEYS, quickTimeStarts, quickTimeThrill, type QuickTimeResult } from "@/scenes/rocketQuickTime"
 import {
@@ -517,8 +517,10 @@ export const FilmCanvas = () => {
       if (wishButtonRef.current) placeBubbleButton(wishButtonRef.current, wishLayout)
       isSmoothMovesShown = !isShowingConcepts && clubSeconds !== null && librarySeconds === null && natureSeconds === null && cosmodromeSeconds === null && isSmoothMovesOpen(clubSeconds, letsDanceSeconds)
       const smoothMovesButton = smoothMovesButtonRef.current
-      if (smoothMovesButton) placeBubbleButton(smoothMovesButton, isSmoothMovesShown ? smoothMovesButtonLayout(window.innerWidth, window.innerHeight) : null)
+      const smoothMovesLayout = isSmoothMovesShown ? smoothMovesButtonLayout(window.innerWidth, window.innerHeight) : null
+      if (smoothMovesButton) placeBubbleButton(smoothMovesButton, smoothMovesLayout)
       if (smoothMovesButton && smoothMovesButton.dataset.busy !== String(specialMove !== null)) smoothMovesButton.dataset.busy = String(specialMove !== null)
+      if (smoothMovesButton) smoothMovesButton.style.transform = smoothMovesLayout ? smoothMovesButtonTransform(specialMove, smoothMovesLayout.fontSize) : ""
       const showEndingMenu = !isShowingConcepts && cosmodromeSeconds !== null && wishSeconds !== null && wishSeconds >= ENDING_MENU_AT
       if (endingMenuRef.current && endingMenuRef.current.dataset.visible !== String(showEndingMenu)) endingMenuRef.current.dataset.visible = String(showEndingMenu)
       if (librarySeconds === null) {

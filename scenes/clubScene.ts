@@ -610,6 +610,12 @@ export const smoothMovesButtonLayout = (width: number, height: number): BubbleBu
   return { centerX: width / 2, centerY: boothFeetY + 6 * djScale + belowFont * 1.4, width: belowFont * SMOOTH_MOVES_WIDTH_EM, fontSize: belowFont }
 }
 
+export const smoothMovesButtonTransform = (move: SpecialMove | null, fontSize: number) => {
+  const frame = specialMoveFrame(move, 0.5 * SPECIAL_MOVE_WAVE, fontSize * 1.5, fontSize * 2.5)
+  if (frame === STILL_FRAME) return ""
+  return `translate(${frame.shiftX}px, ${-frame.lift}px) rotate(${frame.lean + frame.flip}rad) skewX(${frame.slide * -8}deg)`
+}
+
 export const letsDanceButtonLayout =(width: number, height: number, clubSeconds: number, letsDanceSeconds: number | null): BubbleButtonLayout => {
   if (letsDanceSeconds !== null || clubSeconds < FUN_BUBBLE_START + BUBBLE_POP_SECONDS) return null
   const { scale, radiX, feetY } = clubRadiPosition(width, height)
