@@ -6,7 +6,7 @@ import { folkDanceRadiLook, gaidaRadiLook } from "@/characters/radiConcepts"
 import { paintSprite, prepareSceneSprites, releaseSceneSprites, type SpriteBounds } from "@/characters/sprites"
 import { onLayersReleased } from "@/scenes/layerCache"
 import { easeInOut, mixHands, seededRandom } from "@/scenes/libraryScene"
-import { bounce, clampToUnit, drawCloud, drawSun, easeOut, easeOutBack, mix, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
+import { bounce, clampToUnit, drawCloud, drawSun, easeOut, easeOutBack, isTouchScreen, mix, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress } from "@/scenes/openingScene"
 
 type Circle = readonly [number, number, number]
 type Cover = "roundTree" | "pine" | "bush"
@@ -689,7 +689,7 @@ const drawScrollDanceHint = (context: Context, width: number, height: number, ti
   context.translate(centerX, centerY)
   context.scale(appear, appear)
   context.translate(-centerX, -centerY)
-  paintComicBubble(context, [ellipsePath(centerX, centerY, bubbleWidth / 2, bubbleWidth * 0.225)], Math.max(4, bubbleWidth * 0.012), ["Scroll to", "dance the horo!"], centerX, centerY, bubbleWidth * 0.085)
+  paintComicBubble(context, [ellipsePath(centerX, centerY, bubbleWidth / 2, bubbleWidth * 0.225)], Math.max(4, bubbleWidth * 0.012), isTouchScreen() ? ["Swipe up & down", "to dance the horo!"] : ["Scroll to", "dance the horo!"], centerX, centerY, bubbleWidth * 0.085)
   context.restore()
 }
 

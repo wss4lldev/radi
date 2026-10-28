@@ -183,7 +183,7 @@ canvas {
   box-sizing: border-box;
   translate: -50% -50%;
   padding: 0.45em 0.6em;
-  border: 4px solid #ffffff;
+  border: 0.12em solid #ffffff;
   border-radius: 999px;
   background: linear-gradient(90deg, #ff3fa4, #9b5de5, #3fd0ff, #ffd23f, #ff3fa4);
   background-size: 300% 100%;
@@ -192,7 +192,7 @@ canvas {
   font-weight: bold;
   letter-spacing: 0.04em;
   white-space: nowrap;
-  text-shadow: 0 0 8px #ff3fa4, 0 0 16px #ffd23f, 0 3px 0 #2b1d1a;
+  text-shadow: 0 0 0.24em #ff3fa4, 0 0 0.47em #ffd23f, 0 0.09em 0 #2b1d1a;
   cursor: pointer;
   animation:
     smooth-moves-colors 1.2s linear infinite,
@@ -202,10 +202,15 @@ canvas {
   transition: opacity 0.35s, filter 0.35s;
 }
 
-.smooth-moves-button:hover,
 .smooth-moves-button:focus-visible {
   filter: brightness(1.25);
   outline: none;
+}
+
+@media (hover: hover) {
+  .smooth-moves-button:hover {
+    filter: brightness(1.25);
+  }
 }
 
 .smooth-moves-button[data-visible="false"] {
@@ -230,11 +235,11 @@ canvas {
 @keyframes smooth-moves-flash {
   from {
     border-color: #ffffff;
-    box-shadow: 0 0 10px 4px rgba(255, 63, 164, 0.9), 0 0 30px 10px rgba(63, 208, 255, 0.6), 0 0 60px 18px rgba(255, 63, 164, 0.35);
+    box-shadow: 0 0 0.3em 0.12em rgba(255, 63, 164, 0.9), 0 0 0.9em 0.3em rgba(63, 208, 255, 0.6), 0 0 1.75em 0.53em rgba(255, 63, 164, 0.35);
   }
   to {
     border-color: #ffe23f;
-    box-shadow: 0 0 18px 8px rgba(255, 226, 63, 1), 0 0 44px 16px rgba(155, 93, 229, 0.8), 0 0 80px 26px rgba(63, 208, 255, 0.45);
+    box-shadow: 0 0 0.53em 0.24em rgba(255, 226, 63, 1), 0 0 1.3em 0.47em rgba(155, 93, 229, 0.8), 0 0 2.35em 0.76em rgba(63, 208, 255, 0.45);
   }
 }
 
@@ -289,6 +294,35 @@ canvas {
   }
   50% {
     transform: translate(0.25em, 0.08em) rotate(4deg);
+  }
+}
+
+@keyframes smooth-moves-shake-small {
+  0%,
+  100% {
+    transform: translate(-0.3em, 0.1em) rotate(-4deg) scale(1.02, 0.98);
+    animation-timing-function: ease-out;
+  }
+  25% {
+    transform: translate(0, -0.25em) rotate(0deg) scale(0.98, 1.03);
+    animation-timing-function: ease-in;
+  }
+  50% {
+    transform: translate(0.3em, 0.1em) rotate(4deg) scale(1.02, 0.98);
+    animation-timing-function: ease-out;
+  }
+  75% {
+    transform: translate(0, -0.25em) rotate(0deg) scale(0.98, 1.03);
+    animation-timing-function: ease-in;
+  }
+}
+
+@media (pointer: coarse) {
+  .smooth-moves-button {
+    animation:
+      smooth-moves-colors 1.2s linear infinite,
+      smooth-moves-flash 0.35s steps(2, jump-none) infinite,
+      smooth-moves-shake-small 0.38s infinite;
   }
 }
 

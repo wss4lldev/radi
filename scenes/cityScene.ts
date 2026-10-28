@@ -12,6 +12,7 @@ import {
   drawClouds,
   easeOut,
   easeOutBack,
+  isTouchScreen,
   mix,
   mixPoint,
   comicBubbleWidth,
@@ -680,7 +681,7 @@ const drawZhupkiBubble = (context: Context, width: number, height: number, popSc
       path.lineTo(-bubbleWidth * 0.18, bubbleHeight * 0.36)
       path.closePath()
     },
-  ], Math.max(3, bubbleWidth * 0.012), ["Scroll to give it", "жупки"], 0, 0, bubbleWidth * 0.09)
+  ], Math.max(3, bubbleWidth * 0.012), isTouchScreen() ? ["Swipe up to", "give it жупки"] : ["Scroll to give it", "жупки"], 0, 0, bubbleWidth * 0.09)
   context.restore()
 }
 

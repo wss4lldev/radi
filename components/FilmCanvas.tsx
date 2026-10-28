@@ -58,6 +58,7 @@ const scrollYForProgress = (progress: number) => scrollableHeight() * progress
 
 const DRIVE_BOOST_PER_PIXEL = 0.006
 const HORO_STEPS_PER_PIXEL = 0.006
+const HORO_TOUCH_BOOST = 3
 const HORO_IDLE_STEPS_PER_SECOND = 1.6
 const WHEEL_LINE_PIXELS = 16
 const OUTRO_CROSSFADE_SECONDS = 3
@@ -670,7 +671,7 @@ export const FilmCanvas = () => {
         const touchPixels = lastTouchY - touchY
         if (touchPixels < 0 && blockUpwardScroll()) event.preventDefault()
         pressGas(touchPixels)
-        stepHoro(touchPixels)
+        stepHoro(Math.abs(touchPixels) * HORO_TOUCH_BOOST)
       }
       lastTouchY = touchY
     }

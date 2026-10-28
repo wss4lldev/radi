@@ -229,6 +229,10 @@ export const paintComicBubble = (context: Context, bubbleParts: BuildPath[], out
   context.fillText(lines[1], centerX, centerY + fontSize * 0.6)
 }
 
+let touchScreenQuery: MediaQueryList | null = null
+
+export const isTouchScreen = () => (touchScreenQuery ??= window.matchMedia("(pointer: coarse)")).matches
+
 const BUBBLE_FULL_SIZE_HEIGHT = 800
 
 export const comicBubbleWidth = (width: number, height: number, widthShare: number, maxWidth: number) =>
@@ -253,7 +257,7 @@ const drawScrollHintBubble = (context: Context, width: number, height: number, t
   if (opacity <= 0) return
   const { bubbleWidth, bubbleHeight, centerX, centerY } = scrollHintGeometry(width, height, time)
   const outlineWidth = Math.max(4, bubbleWidth * 0.012)
-  const lines: readonly [string, string] = scrollOpen ? ["Scroll down", "to meet me!"] : ["", ""]
+  const lines: readonly [string, string] = !scrollOpen ? ["", ""] : isTouchScreen() ? ["Swipe up", "to meet me!"] : ["Scroll down", "to meet me!"]
   context.save()
   context.globalAlpha = opacity
   paintComicBubble(context, [ellipsePath(centerX, centerY, bubbleWidth / 2, bubbleHeight / 2)], outlineWidth, lines, centerX, centerY, bubbleWidth * 0.09)
