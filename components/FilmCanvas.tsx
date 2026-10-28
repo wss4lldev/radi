@@ -44,6 +44,8 @@ const resizeCanvas = (canvas: HTMLCanvasElement, context: CanvasRenderingContext
   const ratio = window.devicePixelRatio || 1
   canvas.width = Math.floor(window.innerWidth * ratio)
   canvas.height = Math.floor(window.innerHeight * ratio)
+  canvas.style.width = `${window.innerWidth}px`
+  canvas.style.height = `${window.innerHeight}px`
   context.setTransform(ratio, 0, 0, ratio, 0, 0)
 }
 
@@ -600,7 +602,7 @@ export const FilmCanvas = () => {
       void lockLandscape()
     }
     const restoreFullscreen = () => {
-      if (scrollOpen && !document.fullscreenElement) void lockLandscape()
+      if (!document.fullscreenElement) void lockLandscape()
     }
     const startMeetingKira = () => {
       meetingStartMilliseconds = performance.now()

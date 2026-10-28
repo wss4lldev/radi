@@ -5,6 +5,8 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "Cartoonie",
   description: "A long animated movie that plays as you scroll.",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent" },
+  icons: { apple: "/icon-192.png" },
 }
 
 type RootLayoutProps = {

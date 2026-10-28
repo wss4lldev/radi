@@ -38,7 +38,7 @@ export const missedQuickTime = (wishSeconds: number, start: number) => wishSecon
 
 export const isOnQuickTimeKey = (width: number, height: number, wishSeconds: number, flightDuration: number, x: number, y: number) => {
   const { x: centerX, y: centerY } = rocketMiddleOnScreen(width, height, wishSeconds, flightDuration)
-  const reach = Math.max(Math.min(width, height) * KEY_SIZE * 1.4, 48)
+  const reach = Math.max(Math.min(width, height) * KEY_SIZE * 1.6, 48)
   return Math.hypot(x - centerX, y - centerY) <= reach
 }
 
