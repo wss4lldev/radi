@@ -36,6 +36,12 @@ export const isInGoodWindow = (wishSeconds: number, start: number) =>
 
 export const missedQuickTime = (wishSeconds: number, start: number) => wishSeconds >= closesAt(start) + GOOD_LATE_SECONDS
 
+export const isOnQuickTimeKey = (width: number, height: number, wishSeconds: number, flightDuration: number, x: number, y: number) => {
+  const { x: centerX, y: centerY } = rocketMiddleOnScreen(width, height, wishSeconds, flightDuration)
+  const reach = Math.max(Math.min(width, height) * KEY_SIZE * 1.4, 48)
+  return Math.hypot(x - centerX, y - centerY) <= reach
+}
+
 export const drawRocketQuickTime = (
   context: Context,
   width: number,

@@ -5,7 +5,7 @@ import { drawRadiConcepts } from "@/characters/radiConcepts"
 import { anywayButtonLayout, CAR_ENTRANCE_SOUND, cityWalkSteps, CITY_SCENE_END, drawCityScene, DRIVE_CRUISE_SECONDS, DRIVE_MAX_BOOST, DRIVE_READY_SECONDS, KIRA_POP_PROGRESS, KIRA_WOOF_START, RADI_EXIT_START } from "@/scenes/cityScene"
 import { CLUB_SCENE_END, clubWalkSteps, drawClubScene, isSmoothMovesOpen, LAUNCH_START, letsDanceButtonLayout, playedClubSeconds, smoothMovesButtonLayout, smoothMovesButtonTransform, SPECIAL_MOVE_SECONDS, type SpecialMoveKind } from "@/scenes/clubScene"
 import { FILM_SCENES } from "@/scenes/filmScenes"
-import { activeQuickTime, drawRocketQuickTime, isInGoodWindow, missedQuickTime, QUICK_TIME_KEYS, quickTimeStarts, quickTimeThrill, type QuickTimeResult } from "@/scenes/rocketQuickTime"
+import { activeQuickTime, drawRocketQuickTime, isInGoodWindow, isOnQuickTimeKey, missedQuickTime, QUICK_TIME_KEYS, quickTimeStarts, quickTimeThrill, type QuickTimeResult } from "@/scenes/rocketQuickTime"
 import {
   drawLibraryScene,
   libraryWalkSteps,
@@ -25,7 +25,7 @@ import {
 } from "@/scenes/libraryScene"
 import { cosmodromeKiraSteps, cosmodromeWalkSteps, DEFAULT_FLIGHT_SECONDS, drawCosmodromeScene, dudeWalkSteps, ENDING_MENU_AT, ENGINE_FADE_END, ENGINE_FADE_START, IGNITION_START, KIRA_COSMO_WOOF, LIFTOFF, SMOKE_START, SUIT_AT, WISH_START, wishButtonLayout } from "@/scenes/cosmodromeScene"
 import { releaseLayersExcept } from "@/scenes/layerCache"
-import { drawNatureScene, HORO_DANCE_START, HORO_START, NATURE_SCENE_END } from "@/scenes/natureScene"
+import { drawNatureScene, HORO_DANCE_START, HORO_START, LOOK_SWAP, NATURE_SCENE_END, SWIRL_START } from "@/scenes/natureScene"
 import { drawOpeningScene, greetingButtonLayout, kiraWalkSteps, KIRA_SCENE_END, openingWalkSteps, startButtonLayout, WAVE_START, type BubbleButtonLayout } from "@/scenes/openingScene"
 import { createBackgroundPlaylist } from "@/audio/backgroundPlaylist"
 import { createEngineRev } from "@/audio/engineRev"
@@ -36,6 +36,7 @@ import { createLibraryCrash } from "@/audio/libraryCrash"
 import { createRocketLaunch } from "@/audio/rocketLaunch"
 import { createQuickTimeBoost } from "@/audio/quickTimeBoost"
 import { createSpaceReveal } from "@/audio/spaceReveal"
+import { createDressSwirl } from "@/audio/dressSwirl"
 import { SceneSelect } from "@/components/SceneSelect"
 import { useFilmStore } from "@/store/film"
 
@@ -264,6 +265,7 @@ export const FilmCanvas = () => {
     const spaceReveal = createSpaceReveal(SMOKE_START, SUIT_AT)
     const libraryCrash = createLibraryCrash(LIBRARY_FALL_START, LIBRARY_LANDING_SECONDS)
     const heroReveal = createHeroReveal(LIBRARY_HERO_REVEAL)
+    const dressSwirl = createDressSwirl(SWIRL_START, LOOK_SWAP)
     let arrivalStartMilliseconds: number | null = null
     let kiraStartMilliseconds: number | null = null
     let clubStartMilliseconds: number | null = null
@@ -291,6 +293,7 @@ export const FilmCanvas = () => {
     let specialMoveStartMilliseconds: number | null = null
     let isSmoothMovesShown = false
     let quickTimeSeconds: number | null = null
+    let latestFlightDuration = DEFAULT_FLIGHT_SECONDS
     let quickTimeStartList: readonly number[] = []
     let quickTimeResults: (QuickTimeResult | null)[] = QUICK_TIME_KEYS.map(() => null)
     let horoTargetSteps = 0
@@ -390,6 +393,7 @@ export const FilmCanvas = () => {
       }
       crossfadeOutro()
       const flightDuration = Number.isFinite(endSong.duration) ? endSong.duration : DEFAULT_FLIGHT_SECONDS
+      latestFlightDuration = flightDuration
       quickTimeSeconds = hasLiftedOff ? wishSeconds : null
       if (quickTimeSeconds === null) {
         if (quickTimeResults.some((result) => result !== null)) quickTimeResults = QUICK_TIME_KEYS.map(() => null)
@@ -580,6 +584,7 @@ export const FilmCanvas = () => {
       quickTimeBoost.sync(thrill.boost)
       spaceReveal.sync(isShowingConcepts || cosmodromeSeconds === null ? null : wishSeconds)
       libraryCrash.sync(isShowingConcepts ? null : librarySeconds, libraryRoofBreakSeconds(window.innerWidth, window.innerHeight))
+      dressSwirl.sync(isShowingConcepts ? null : natureSeconds)
       heroReveal.sync(
         librarySeconds === null ? null : exitSeconds,
         finalChoice === "batman" || finalChoice === "unicorn" ? finalChoice : null,
@@ -593,6 +598,9 @@ export const FilmCanvas = () => {
       if (startButtonRef.current) startButtonRef.current.dataset.visible = "false"
       backgroundPlaylist.nudge()
       void lockLandscape()
+    }
+    const restoreFullscreen = () => {
+      if (scrollOpen && !document.fullscreenElement) void lockLandscape()
     }
     const startMeetingKira = () => {
       meetingStartMilliseconds = performance.now()
@@ -688,6 +696,7 @@ export const FilmCanvas = () => {
       clubStartMilliseconds = sceneSelection.sceneId === "nightClub" ? performance.now() : null
       libraryStartMilliseconds = sceneSelection.sceneId === "library" ? performance.now() : null
       natureStartMilliseconds = sceneSelection.sceneId === "nature" ? performance.now() : null
+      if (natureStartMilliseconds !== null) dressSwirl.prime()
       const isRocketLaunch = sceneSelection.sceneId === "rocketLaunch"
       cosmodromeStartMilliseconds = sceneSelection.sceneId === "cosmodrome" ? performance.now() : isRocketLaunch ? performance.now() - (WISH_START + LIFTOFF) * 1000 : null
       wishStartMilliseconds = isRocketLaunch ? performance.now() - LIFTOFF * 1000 : null
@@ -738,16 +747,21 @@ export const FilmCanvas = () => {
       backgroundPlaylist.nudge()
       const scrollingUp = event.key === "ArrowUp" || event.key === "PageUp" || event.key === "Home" || (event.key === " " && event.shiftKey)
       if (scrollingUp && (event.key === "Home" ? scrollFloorProgress > 0 : blockUpwardScroll())) event.preventDefault()
-      pressQuickTime(event)
+      if (!event.repeat) pressQuickTime(event.key.toUpperCase())
     }
-    const pressQuickTime = (event: KeyboardEvent) => {
-      if (quickTimeSeconds === null || wishStartMilliseconds === null || event.repeat) return
-      const key = event.key.toUpperCase()
-      if (!QUICK_TIME_KEYS.some((quickTimeKey) => quickTimeKey === key)) return
+    const pressQuickTime = (key: string | null) => {
+      if (quickTimeSeconds === null || wishStartMilliseconds === null) return
+      if (key !== null && !QUICK_TIME_KEYS.some((quickTimeKey) => quickTimeKey === key)) return
       const seconds = (performance.now() - wishStartMilliseconds) / 1000
       const index = activeQuickTime(seconds, quickTimeStartList)
       if (index === -1 || quickTimeResults[index] !== null) return
-      quickTimeResults[index] = { hit: key === QUICK_TIME_KEYS[index] && isInGoodWindow(seconds, quickTimeStartList[index]), atSeconds: seconds }
+      quickTimeResults[index] = { hit: (key === null || key === QUICK_TIME_KEYS[index]) && isInGoodWindow(seconds, quickTimeStartList[index]), atSeconds: seconds }
+    }
+    const tapQuickTime = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" || quickTimeSeconds === null || wishStartMilliseconds === null) return
+      const seconds = (performance.now() - wishStartMilliseconds) / 1000
+      if (!isOnQuickTimeKey(window.innerWidth, window.innerHeight, seconds, latestFlightDuration, event.clientX, event.clientY)) return
+      pressQuickTime(null)
     }
     const onResize = () => {
       resizeCanvas(canvas, context)
@@ -762,7 +776,9 @@ export const FilmCanvas = () => {
     window.addEventListener("wheel", onWheel, { passive: false })
     window.addEventListener("touchstart", onTouchStart, { passive: true })
     window.addEventListener("touchmove", onTouchMove, { passive: false })
+    window.addEventListener("touchend", restoreFullscreen, { passive: true })
     window.addEventListener("pointerdown", backgroundPlaylist.nudge, true)
+    window.addEventListener("pointerdown", tapQuickTime)
     window.addEventListener("keydown", onKeyDown, true)
     const startButton = startButtonRef.current
     startButton?.addEventListener("pointerdown", backgroundPlaylist.nudge)
@@ -820,6 +836,7 @@ export const FilmCanvas = () => {
       finalChoice = choice
       exitStartMilliseconds = performance.now()
       heroReveal.prime()
+      dressSwirl.prime()
     }
     const chooseQuizA = () => {
       if (libraryQuizPhase === "captain") chooseCaptain("nemo")
@@ -875,7 +892,9 @@ export const FilmCanvas = () => {
       window.removeEventListener("wheel", onWheel)
       window.removeEventListener("touchstart", onTouchStart)
       window.removeEventListener("touchmove", onTouchMove)
+      window.removeEventListener("touchend", restoreFullscreen)
       window.removeEventListener("pointerdown", backgroundPlaylist.nudge, true)
+      window.removeEventListener("pointerdown", tapQuickTime)
       window.removeEventListener("keydown", onKeyDown, true)
       delete document.documentElement.dataset.scrollOpen
       startButton?.removeEventListener("pointerdown", backgroundPlaylist.nudge)
@@ -913,6 +932,7 @@ export const FilmCanvas = () => {
       spaceReveal.stop()
       libraryCrash.stop()
       heroReveal.stop()
+      dressSwirl.stop()
     }
   }, [])
 
