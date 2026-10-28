@@ -1,0 +1,9 @@
+# Cartoonie
+
+Read `CONCEPT.md` and `TECHSTACK.md` before changing the site.
+
+- One Next.js page, in TypeScript. One full-screen Canvas 2D. Zustand for shared state. Plain CSS. Comic Sans MS for text.
+- Scroll position plays the film and scrolling back rewinds it. Do not drive the story on a timer.
+- Chapters are local data in the project. No backend, database, or API unless the user asks.
+- Draw simple shapes with the Canvas 2D API. Use a sprite sheet only when a motion needs drawn frames.
+- Do not add libraries, sound, or hosting beyond `TECHSTACK.md` unless the user asks.
