@@ -382,7 +382,7 @@ const greetingBubbleGeometry = (width: number, height: number, radiX: number, fe
 }
 
 export const greetingButtonLayout = (width: number, height: number, progress: number): BubbleButtonLayout => {
-  if (progress < WAVE_START) return null
+  if (progress < GREETING_END) return null
   const { bubbleWidth, bubbleHeight, centerX, centerY } = greetingBubbleGeometry(width, height, width / 2, radiFeetY(height), radiScale(width, height))
   return { centerX, centerY: centerY + bubbleHeight * 0.2, width: bubbleWidth * 0.72, fontSize: Math.max(11, bubbleWidth * 0.065) }
 }
@@ -627,7 +627,7 @@ const drawSkippingRadi = (context: Context, width: number, height: number, time:
     scale,
     isMeeting
       ? easeOutBack(meetingBubble) * (1 - easeOut(stageProgress(sceneSeconds, LICK_START, BUBBLE_HIDE_END)))
-      : easeOutBack(stageProgress(progress, TURN_END, GREETING_END)),
+      : easeOutBack(stageProgress(progress, GREETING_END - 0.03, GREETING_END)),
     isMeeting ? MEETING_BUBBLE : GREETING_BUBBLE,
   )
   if (isMeeting) {
