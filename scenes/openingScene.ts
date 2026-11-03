@@ -587,8 +587,8 @@ const drawSkippingRadi = (context: Context, width: number, height: number, time:
   const meetingBubble = clampToUnit(sceneSeconds / MEETING_BUBBLE_SECONDS)
   const tossWeight = easeOut(stageProgress(sceneSeconds, TOSS_START, TOSS_WINDUP_END)) * (1 - easeOut(stageProgress(sceneSeconds, TOSS_RELEASE + 0.1, TOSS_RELEASE + 0.6)))
   const tossHand = mixPoint(TOSS_HAND_LOW, TOSS_HAND_HIGH, easeOut(stageProgress(sceneSeconds, TOSS_WINDUP_END, TOSS_RELEASE)))
-  const raise = easeOut(stageProgress(progress, GREETING_END, WAVE_START)) * (1 - easeOut(meetingBubble))
-  const isWaving = progress >= WAVE_START
+  const raise = easeOut(stageProgress(progress, GREETING_END - 0.03, GREETING_END)) * (1 - easeOut(meetingBubble))
+  const isWaving = progress >= GREETING_END - 0.03
   const waveSwing = isWaving ? Math.sin(time * 7) * 6 : 0
   const lean = isMoving(stride)
     ? (0.12 + Math.sin(hopPhase * Math.PI * 2) * 0.05) * settle(stride)

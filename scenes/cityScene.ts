@@ -755,6 +755,7 @@ export const drawCityScene = (
   drawScenerySky(context, width, height, height * BUILDINGS_BASE, camera)
   drawEveningSky(context, width, height, height * BUILDINGS_BASE, light)
   drawSettingSun(context, width, height, height * BUILDINGS_BASE, time, light)
+  drawMoonAndStars(context, width, height, height * BUILDINGS_BASE, time, light)
   context.globalAlpha = 1 - light.night * 0.6
   drawClouds(context, width, height, time)
   context.globalAlpha = 1
@@ -794,7 +795,6 @@ export const drawCityScene = (
   else drawStreetFront(context)
   if (club && isClubVisible) drawClubBuilding(context, club, time)
   drawNightShade(context, width, height, light)
-  drawMoonAndStars(context, width, height, height * BUILDINGS_BASE, time, light)
   if (club && isClubVisible) {
     drawClubLights(context, club, time, arrivalSeconds === null ? 0 : Math.sin(Math.PI * stageProgress(arrivalSeconds, RADI_WALK_END - 0.3, RADI_ENTER_END + 0.3)))
   }
