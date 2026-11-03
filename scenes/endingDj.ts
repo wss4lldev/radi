@@ -1,10 +1,10 @@
 import { BEAT_HISTORY } from "@/audio/outroWave"
 import { type Context } from "@/characters/paint"
-import { RAINBOW } from "@/characters/radi"
-import { DJ_PANEL, DJ_RECORD_X, drawDjDeck, drawDjPanel, drawKiraDj } from "@/scenes/clubScene"
+import { RAINBOW, type Point } from "@/characters/radi"
+import { DJ_PANEL, DJ_RECORD_X, drawDjDeck, drawDjPanel, drawKiraDj, kiraDjShoulder, type SpeakerShades } from "@/scenes/clubScene"
 import { rainbowGradient, type OutroPlayback } from "@/scenes/endingKaraoke"
 import { easeInOut } from "@/scenes/libraryScene"
-import { clampToUnit, mix } from "@/scenes/openingScene"
+import { clampToUnit, mix, mixPoint } from "@/scenes/openingScene"
 
 const DJ_SIZE = 0.9
 const DJ_MAX_WIDTH = 0.42
@@ -17,12 +17,16 @@ const PAW_Y = -32 - KIRA_SINK
 const PAW_SCRATCH_RATE = 7
 const PAW_SCRATCH_REACH = 5
 const PAW_TAP_LIFT = 4
+const CHEER_FIRST = 10
 const CHEER_EVERY = 8.5
 const CHEER_SECONDS = 3
 const CHEER_RAISE = 0.3
-const CHEER_PUMP_HEIGHT = 10
-const CHEER_PAW_X = 38
-const CHEER_PAW_Y = -66 - KIRA_SINK
+const UPPER_ARM = 12
+const UPPER_ARM_ANGLE = -0.45
+const FOREARM = 12
+const FOREARM_REST_TILT = 0.45
+const FOREARM_PUMP_TILT = 0.1
+const SPEAKER_SHADES: SpeakerShades = ["#4a4170", "#7a70b0", "#2a2440"]
 const SCREEN_INSET = 3
 const SCREEN_COLOR = "#0d0a18"
 const WAVE_MIN_RANGE = 0.12
@@ -115,15 +119,17 @@ export const drawEndingDj = (context: Context, width: number, { djScale, boothHa
   if (!outro || rise <= 0) return
   const centerX = mix(width + boothHalf, boothX, easeInOut(rise))
   const beats = readBeats(outro.beatHistory ?? [])
-  const cheerTime = outro.seconds % CHEER_EVERY
+  const cheerTime = (outro.seconds - CHEER_FIRST) % CHEER_EVERY
   const cheer = easeInOut(Math.min(clampToUnit(cheerTime / CHEER_RAISE), clampToUnit((CHEER_SECONDS - cheerTime) / CHEER_RAISE)))
-  drawDjDeck(context, centerX, feetY, djScale, outro.seconds, beats.kick)
+  drawDjDeck(context, centerX, feetY, djScale, outro.seconds, beats.kick, SPEAKER_SHADES)
+  const shoulder = kiraDjShoulder(1, beats.kick)
+  const deckPaw: Point = [PAW_X + Math.sin(outro.seconds * 2.3) * 2, PAW_Y - beats.kick * PAW_TAP_LIFT]
+  const raisedElbow: Point = [shoulder[0] + Math.cos(UPPER_ARM_ANGLE) * UPPER_ARM, shoulder[1] + Math.sin(UPPER_ARM_ANGLE) * UPPER_ARM]
+  const forearmAngle = -Math.PI / 2 + mix(FOREARM_REST_TILT, FOREARM_PUMP_TILT, beats.kick)
+  const raisedPaw: Point = [raisedElbow[0] + Math.cos(forearmAngle) * FOREARM, raisedElbow[1] + Math.sin(forearmAngle) * FOREARM]
   drawKiraDj(context, centerX, feetY + KIRA_SINK * djScale, djScale, outro.seconds, beats.kick, [
-    [-PAW_X + Math.sin(outro.seconds * PAW_SCRATCH_RATE) * PAW_SCRATCH_REACH, PAW_Y],
-    [
-      mix(PAW_X + Math.sin(outro.seconds * 2.3) * 2, CHEER_PAW_X, cheer),
-      mix(PAW_Y - beats.kick * PAW_TAP_LIFT, CHEER_PAW_Y - beats.kick * CHEER_PUMP_HEIGHT, cheer),
-    ],
+    { paw: [-PAW_X + Math.sin(outro.seconds * PAW_SCRATCH_RATE) * PAW_SCRATCH_REACH, PAW_Y] },
+    { elbow: mixPoint(mixPoint(shoulder, deckPaw, 0.5), raisedElbow, cheer), paw: mixPoint(deckPaw, raisedPaw, cheer) },
   ])
   drawDjPanel(context, centerX, feetY, djScale, outro.seconds)
   const screenLeft = centerX + (DJ_PANEL.left + SCREEN_INSET) * djScale

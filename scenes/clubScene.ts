@@ -137,7 +137,7 @@ const KIRA_DJ_AT = 27
 const KIRA_DJ_PUFF_LEAD = 0.4
 const KIRA_DJ_SIZE = 1.3
 const KIRA_DJ_RAISE = 8
-const KIRA_SHOULDER_X = 6
+const KIRA_SHOULDER_X = 9
 const KIRA_SHOULDER_Y = -30
 const DJ_SWAP_PUFFS = Array.from({ length: 12 }, (_, index) => [(index / 12) * Math.PI * 2, 18 + (index % 3) * 8, 14 + (index % 4) * 3, ["255, 111, 181", "155, 93, 229", "255, 255, 255"][index % 3]] as const)
 const DANCERS: readonly Dancer[] = [
@@ -527,6 +527,8 @@ const drawDjSwapPuff = (context: Context, width: number, height: number, scale: 
 
 export const DJ_PANEL = { left: -48, top: -28, width: 96, height: 34 } as const
 export const DJ_RECORD_X = 24
+export type SpeakerShades = readonly [string, string, string]
+const CLUB_SPEAKER_SHADES: SpeakerShades = ["#2a2440", "#4a4466", "#15121f"]
 
 const inDjUnits = (context: Context, centerX: number, feetY: number, djScale: number, drawInBooth: () => void) => {
   context.save()
@@ -539,15 +541,15 @@ const inDjUnits = (context: Context, centerX: number, feetY: number, djScale: nu
   context.restore()
 }
 
-export const drawDjDeck = (context: Context, centerX: number, feetY: number, djScale: number, time: number, beat: number) =>
+export const drawDjDeck = (context: Context, centerX: number, feetY: number, djScale: number, time: number, beat: number, [cabinet, cone, coneCenter]: SpeakerShades = CLUB_SPEAKER_SHADES) =>
   inDjUnits(context, centerX, feetY, djScale, () => {
     for (const side of [-1, 1]) {
       const speakerX = side * 62
-      paintShape(context, "#2a2440", (path) => path.roundRect(speakerX - 15, -66, 30, 72, 3))
+      paintShape(context, cabinet, (path) => path.roundRect(speakerX - 15, -66, 30, 72, 3))
       for (const [coneY, coneRadius] of [[-48, 9], [-18, 12]]) {
         const pulsingRadius = coneRadius * (1 + beat * 0.12)
-        paintShape(context, "#4a4466", ellipsePath(speakerX, coneY, pulsingRadius, pulsingRadius))
-        paintShape(context, "#15121f", ellipsePath(speakerX, coneY, pulsingRadius * 0.45, pulsingRadius * 0.45))
+        paintShape(context, cone, ellipsePath(speakerX, coneY, pulsingRadius, pulsingRadius))
+        paintShape(context, coneCenter, ellipsePath(speakerX, coneY, pulsingRadius * 0.45, pulsingRadius * 0.45))
       }
     }
     paintShape(context, "#3a3450", (path) => {
