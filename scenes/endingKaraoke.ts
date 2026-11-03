@@ -14,14 +14,14 @@ const LINE_LINGER = 0.4
 const LINE_FADE = 0.3
 const WORD_MAX_FILL = 0.9
 const WORD_SHAKE_SECONDS = 0.18
-const WORD_SHAKE_SIZE = 0.07
+const WORD_SHAKE_SIZE = 0.05
 const BALL_HOP = 0.45
 const BALL_SIZE = 0.24
 const BALL_TRAIL = 5
 const BALL_TRAIL_STEP = 0.035
 const KARAOKE_RISE = 0.6
 const WAVE_Y = 0.47
-const WAVE_WIDTH = 0.3
+const WAVE_WIDTH = 0.2
 const WAVE_HEIGHT = 0.04
 const WAVE_MIN_RANGE = 0.12
 const WAVE_PUNCH = 1.5
@@ -30,7 +30,7 @@ const KICK_BASELINE_FROM = 4
 const KICK_BASELINE_TO = 24
 const KICK_GAIN = 2
 const KICK_STRETCH = 0.6
-const KICK_SHAKE = 0.012
+const KICK_SHAKE = 0.008
 const DIM_FILL = "#5a5680"
 const KARAOKE_SONG = OUTRO_LYRICS.findIndex((lines) => lines.length > 0)
 
@@ -171,7 +171,7 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
   const barGap = span / 2 / BEAT_HISTORY
   const beatColor = RAINBOW[Math.floor(outro.seconds * 4) % RAINBOW.length]
   context.save()
-  context.globalAlpha = appear * kick * 0.3
+  context.globalAlpha = appear * kick * 0.45
   context.translate(centerX, centerY)
   context.scale(1, 0.35)
   const bloom = context.createRadialGradient(0, 0, 0, 0, 0, span * 0.6)
@@ -183,7 +183,7 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
   const ringProgress = kickAge / KICK_FRAMES
   const ringRadius = mix(span * 0.1, span * 0.6, ringProgress)
   context.save()
-  context.globalAlpha = appear * kick * 0.7
+  context.globalAlpha = appear * kick
   context.lineWidth = Math.max(1.5, reach * 0.08 * (1 - ringProgress))
   context.strokeStyle = beatColor
   context.beginPath()
@@ -205,11 +205,11 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
     }
   })
   context.shadowColor = beatColor
-  context.shadowBlur = reach * (0.3 + kick * 1.6)
+  context.shadowBlur = reach * (0.3 + kick * 2.5)
   context.lineWidth = Math.max(1, barGap * 0.55)
   context.strokeStyle = rainbowGradient(context, centerX - span / 2, span)
   context.stroke()
-  context.globalAlpha = appear * kick * 0.5
+  context.globalAlpha = appear * kick * 0.85
   context.shadowColor = "#ffffff"
   context.strokeStyle = "#ffffff"
   context.stroke()

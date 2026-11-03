@@ -1,7 +1,7 @@
 const FFT_SIZE = 2048
 const BASS_LOW_HZ = 40
 const BASS_HIGH_HZ = 150
-export const BEAT_HISTORY = 72
+export const BEAT_HISTORY = 90
 const SAMPLE_MILLISECONDS = 1000 / 60
 
 export const createOutroWave = (songs: readonly HTMLAudioElement[]) => {
