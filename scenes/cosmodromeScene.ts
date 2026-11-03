@@ -1657,15 +1657,21 @@ const drawSkippingRadi = (context: Context, width: number, height: number, baseS
 }
 
 export const drawCosmodromeScene = (context: Context, width: number, height: number, time: number, sceneSeconds: number, wishSeconds: number | null, flightDuration: number, thrill: FlightThrill = CALM_FLIGHT, outroPlayback: OutroPlayback | null = null) => {
+  context.lineJoin = "round"
+  context.lineCap = "round"
+  context.strokeStyle = OUTLINE
+  if (wishSeconds !== null && wishSeconds >= ENDING_START) {
+    context.fillStyle = "#000000"
+    context.fillRect(0, 0, width, height)
+    drawEndingStage(context, width, height, wishSeconds - ENDING_START, outroPlayback)
+    return
+  }
   const horizonY = height * 0.62
   const feetY = height * RADI_FEET
   const scale = radiScale(width, height)
   const camX = cameraX(width, wishSeconds)
   const launch = launchState(height, wishSeconds, flightDuration)
   const space = easeInOut(clampToUnit((launch.altitude - SPACE_FROM) / (SPACE_TO - SPACE_FROM)))
-  context.lineJoin = "round"
-  context.lineCap = "round"
-  context.strokeStyle = OUTLINE
   context.save()
   const shake = launch.shake + thrill.wobble * 0.35
   context.translate(Math.sin(time * 61) * 7 * shake, Math.cos(time * 57) * 5 * shake)
@@ -1729,7 +1735,10 @@ const drawEndingIris = (context: Context, width: number, height: number, camX: n
   const close = stageProgress(flightSeconds, closeStart, closeStart + END_IRIS_CLOSE)
   const windowRadius = WINDOW_RADIUS * unit * launch.zoom
   paintIris(context, width, height, baseX, windowY, mix(Math.hypot(width, height), windowRadius, focus) * (1 - close ** 2))
-  const sinceBlack = flightSeconds - closeStart - END_IRIS_CLOSE
+  drawEndingStage(context, width, height, flightSeconds - closeStart - END_IRIS_CLOSE, outroPlayback)
+}
+
+const drawEndingStage = (context: Context, width: number, height: number, sinceBlack: number, outroPlayback: OutroPlayback | null) => {
   const rise = karaokeRise(outroPlayback)
   const feetY = height * ENDING_FEET_Y
   const scale = Math.min((height * 0.33) / 125, (width * 0.5) / 125)

@@ -71,12 +71,13 @@ const wordShake = (sinceLanding: number, fontSize: number) => {
   return [Math.sin(sinceLanding * 90) * amount, Math.cos(sinceLanding * 70) * amount] as const
 }
 
-const paintLineText = (context: Context, line: LyricLine, layout: LineLayout, spots: readonly (readonly [number, number])[], fill: string | CanvasGradient) => {
+const paintLineText = (context: Context, line: LyricLine, layout: LineLayout, spots: readonly (readonly [number, number])[], fill: string | CanvasGradient, glow = 0) => {
   context.font = `bold ${layout.fontSize}px ${FONT_STACK}`
   context.lineWidth = layout.fontSize * 0.14
   context.strokeStyle = OUTLINE
   line.words.forEach(([, word], index) => context.strokeText(word, ...spots[index]))
   context.fillStyle = fill
+  context.shadowBlur = glow
   line.words.forEach(([, word], index) => context.fillText(word, ...spots[index]))
 }
 
@@ -165,8 +166,7 @@ export const drawEndingKaraoke = (context: Context, width: number, height: numbe
     context.rect(layout.left - layout.fontSize, y - layout.fontSize, sungRight - layout.left + layout.fontSize, layout.fontSize * 2)
     context.clip()
     context.shadowColor = "rgba(255, 255, 255, 0.6)"
-    context.shadowBlur = layout.fontSize * 0.4
-    paintLineText(context, line, layout, spots, rainbowGradient(context, layout.left, layout.totalWidth))
+    paintLineText(context, line, layout, spots, rainbowGradient(context, layout.left, layout.totalWidth), layout.fontSize * 0.4)
     context.restore()
   }
   drawBall(context, line, layout, y, seconds)

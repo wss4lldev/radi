@@ -100,7 +100,7 @@ const drawSoundWave = (context: Context, screenX: number, screenY: number, span:
   context.strokeStyle = rainbowGradient(context, centerX - span / 2, span)
   context.stroke()
   context.globalAlpha = kick * 0.85
-  context.shadowColor = "#ffffff"
+  context.shadowBlur = 0
   context.strokeStyle = "#ffffff"
   context.stroke()
   context.restore()
