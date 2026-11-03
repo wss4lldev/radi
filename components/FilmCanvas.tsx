@@ -5,7 +5,7 @@ import { drawRadiConcepts } from "@/characters/radiConcepts"
 import { anywayButtonLayout, CAR_ENTRANCE_SOUND, cityWalkSteps, CITY_SCENE_END, drawCityScene, DRIVE_CRUISE_SECONDS, DRIVE_MAX_BOOST, DRIVE_READY_SECONDS, KIRA_POP_PROGRESS, KIRA_WOOF_START, RADI_EXIT_START } from "@/scenes/cityScene"
 import { CLUB_SCENE_END, clubWalkSteps, drawClubScene, isSmoothMovesOpen, LAUNCH_START, letsDanceButtonLayout, playedClubSeconds, smoothMovesButtonLayout, smoothMovesButtonTransform, SPECIAL_MOVE_SECONDS, type SpecialMoveKind } from "@/scenes/clubScene"
 import { FILM_SCENES } from "@/scenes/filmScenes"
-import { activeQuickTime, drawRocketQuickTime, isInGoodWindow, isOnQuickTimeKey, missedQuickTime, QUICK_TIME_KEYS, quickTimeStarts, quickTimeThrill, type QuickTimeResult } from "@/scenes/rocketQuickTime"
+import { activeQuickTime, drawRocketQuickTime, isInGoodWindow, isOnQuickTimeKey, missedQuickTime, QUICK_TIME_KEYS, quickTimeMissAt, quickTimeStarts, quickTimeThrill, type QuickTimeResult } from "@/scenes/rocketQuickTime"
 import {
   drawLibraryScene,
   libraryWalkSteps,
@@ -23,7 +23,8 @@ import {
   type JokeChoice,
   type LibraryQuizPhase,
 } from "@/scenes/libraryScene"
-import { cosmodromeKiraSteps, cosmodromeWalkSteps, DEFAULT_FLIGHT_SECONDS, drawCosmodromeScene, dudeWalkSteps, ENDING_MENU_AT, ENGINE_FADE_END, ENGINE_FADE_START, IGNITION_START, KIRA_COSMO_WOOF, LIFTOFF, SMOKE_START, SUIT_AT, WISH_START, wishButtonLayout } from "@/scenes/cosmodromeScene"
+import { cosmodromeKiraSteps, cosmodromeWalkSteps, DEFAULT_FLIGHT_SECONDS, drawCosmodromeScene, dudeWalkSteps, ENDING_MENU_AT, ENDING_START, ENGINE_FADE_END, ENGINE_FADE_START, IGNITION_START, KIRA_COSMO_WOOF, LIFTOFF, SMOKE_START, SUIT_AT, WISH_START, wishButtonLayout } from "@/scenes/cosmodromeScene"
+import { karaokeRise } from "@/scenes/endingKaraoke"
 import { releaseLayersExcept } from "@/scenes/layerCache"
 import { drawNatureScene, HORO_DANCE_START, HORO_START, LOOK_SWAP, NATURE_SCENE_END, SWIRL_START } from "@/scenes/natureScene"
 import { drawOpeningScene, greetingButtonLayout, kiraWalkSteps, KIRA_SCENE_END, openingWalkSteps, startButtonLayout, WAVE_START, type BubbleButtonLayout } from "@/scenes/openingScene"
@@ -33,6 +34,7 @@ import { createKiraWoof } from "@/audio/kiraWoof"
 import { createFootsteps } from "@/audio/footsteps"
 import { createHeroReveal } from "@/audio/heroReveal"
 import { createLibraryCrash } from "@/audio/libraryCrash"
+import { createOutroWave } from "@/audio/outroWave"
 import { createRocketLaunch } from "@/audio/rocketLaunch"
 import { createQuickTimeBoost } from "@/audio/quickTimeBoost"
 import { createSpaceReveal } from "@/audio/spaceReveal"
@@ -208,6 +210,7 @@ export const FilmCanvas = () => {
       return song
     })
     const outroChain = [endSong, ...outroSongs]
+    const outroWave = createOutroWave(outroChain)
     let outroIndex = 0
     const stopEndSong = () => {
       endSongStarted = false
@@ -390,7 +393,7 @@ export const FilmCanvas = () => {
       if (!hasLiftedOff && endSongStarted) stopEndSong()
       if (hasLiftedOff && !endSongStarted) {
         endSongStarted = true
-        endSong.currentTime = 0
+        endSong.currentTime = wishSeconds - LIFTOFF
         void endSong.play().catch(() => {})
       }
       crossfadeOutro()
@@ -403,7 +406,7 @@ export const FilmCanvas = () => {
         const seconds = quickTimeSeconds
         quickTimeStartList = quickTimeStarts(flightDuration)
         quickTimeStartList.forEach((start, index) => {
-          if (quickTimeResults[index] === null && missedQuickTime(seconds, start)) quickTimeResults[index] = { hit: false, atSeconds: seconds }
+          if (quickTimeResults[index] === null && missedQuickTime(seconds, start)) quickTimeResults[index] = { hit: false, atSeconds: quickTimeMissAt(start) }
         })
       }
       const thrill = quickTimeThrill(quickTimeSeconds, quickTimeResults)
@@ -445,13 +448,14 @@ export const FilmCanvas = () => {
       pinnedScrollY = !isShowingConcepts && cosmodromeSeconds === null && natureSeconds !== null && natureSeconds >= HORO_START ? (pinnedScrollY ?? window.scrollY) : null
       horoSteps += (horoTargetSteps - horoSteps) * (1 - Math.exp(-elapsedSeconds * 5))
       if (pinnedScrollY !== null) horoIdleSteps += elapsedSeconds * HORO_IDLE_STEPS_PER_SECOND * Math.max(0, 1 - Math.abs(horoTargetSteps - horoSteps) * 4)
+      const outroPlayback = endSongStarted ? { songIndex: outroIndex, seconds: outroChain[outroIndex].currentTime, beatHistory: outroWave.read(timeMilliseconds) } : null
       const shakingBoring = libraryQuizPhase === "final" && boringShakeStartMilliseconds !== null && timeMilliseconds - boringShakeStartMilliseconds < 1000 && finalChoice === null
       if (isShowingConcepts) {
         context.fillStyle = "#000000"
         context.fillRect(0, 0, window.innerWidth, window.innerHeight)
         drawRadiConcepts(context, window.innerWidth, window.innerHeight)
       } else if (cosmodromeSeconds !== null) {
-        drawCosmodromeScene(context, window.innerWidth, window.innerHeight, timeMilliseconds / 1000, cosmodromeSeconds, wishSeconds, flightDuration, thrill)
+        drawCosmodromeScene(context, window.innerWidth, window.innerHeight, timeMilliseconds / 1000, cosmodromeSeconds, wishSeconds, flightDuration, thrill, outroPlayback)
         drawRocketQuickTime(context, window.innerWidth, window.innerHeight, quickTimeSeconds, quickTimeStartList, quickTimeResults, flightDuration)
       } else if (natureSeconds !== null) {
         drawNatureScene(context, window.innerWidth, window.innerHeight, timeMilliseconds / 1000, natureSeconds, horoSteps, horoSteps + horoIdleSteps, !hasScrolledHoro)
@@ -528,7 +532,7 @@ export const FilmCanvas = () => {
       if (smoothMovesButton) placeBubbleButton(smoothMovesButton, smoothMovesLayout)
       if (smoothMovesButton && smoothMovesButton.dataset.busy !== String(specialMove !== null)) smoothMovesButton.dataset.busy = String(specialMove !== null)
       if (smoothMovesButton) smoothMovesButton.style.transform = smoothMovesLayout ? smoothMovesButtonTransform(specialMove, smoothMovesLayout.fontSize) : ""
-      const showEndingMenu = !isShowingConcepts && cosmodromeSeconds !== null && wishSeconds !== null && wishSeconds >= ENDING_MENU_AT
+      const showEndingMenu = !isShowingConcepts && cosmodromeSeconds !== null && wishSeconds !== null && wishSeconds >= ENDING_MENU_AT && karaokeRise(outroPlayback) > 0
       if (endingMenuRef.current && endingMenuRef.current.dataset.visible !== String(showEndingMenu)) endingMenuRef.current.dataset.visible = String(showEndingMenu)
       if (librarySeconds === null) {
         libraryQuizPhase = "captain"
@@ -630,6 +634,7 @@ export const FilmCanvas = () => {
     const makeWish = () => {
       wishStartMilliseconds ??= performance.now()
       spaceReveal.prime()
+      outroWave.prime()
     }
     const startDancing = () => {
       if (letsDanceStartMilliseconds !== null) return
@@ -699,9 +704,11 @@ export const FilmCanvas = () => {
       libraryStartMilliseconds = sceneSelection.sceneId === "library" ? performance.now() : null
       natureStartMilliseconds = sceneSelection.sceneId === "nature" ? performance.now() : null
       if (natureStartMilliseconds !== null) dressSwirl.prime()
-      const isRocketLaunch = sceneSelection.sceneId === "rocketLaunch"
-      cosmodromeStartMilliseconds = sceneSelection.sceneId === "cosmodrome" ? performance.now() : isRocketLaunch ? performance.now() - (WISH_START + LIFTOFF) * 1000 : null
-      wishStartMilliseconds = isRocketLaunch ? performance.now() - LIFTOFF * 1000 : null
+      const wishJumpSeconds = sceneSelection.sceneId === "rocketLaunch" ? LIFTOFF : sceneSelection.sceneId === "credits" ? ENDING_START : null
+      cosmodromeStartMilliseconds = sceneSelection.sceneId === "cosmodrome" ? performance.now() : wishJumpSeconds !== null ? performance.now() - (WISH_START + wishJumpSeconds) * 1000 : null
+      wishStartMilliseconds = wishJumpSeconds === null ? null : performance.now() - wishJumpSeconds * 1000
+      if (wishJumpSeconds !== null) outroWave.prime()
+      stopEndSong()
       horoTargetSteps = 0
       horoSteps = 0
       horoIdleSteps = 0

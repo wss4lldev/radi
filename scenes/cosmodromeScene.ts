@@ -4,6 +4,7 @@ import { type PartyPose } from "@/characters/partyPerson"
 import { drawRadi, drawStarSparkle, RAINBOW, type Point, type RadiExpression } from "@/characters/radi"
 import { astronautRadiLook, sunnyRadiLook, unicornRadiLook } from "@/characters/radiConcepts"
 import { drawShadesDudeFront } from "@/characters/shadesDude"
+import { drawEndingKaraoke, karaokeRise, type OutroPlayback } from "@/scenes/endingKaraoke"
 import { easeInOut, seededRandom } from "@/scenes/libraryScene"
 import { bounce, clampToUnit, drawCloud, easeOut, easeOutBack, heartPath, mix, mixPoint, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
 
@@ -152,7 +153,9 @@ const ENDING_LETTER_GAP = 0.09
 const ENDING_FLIGHT = 0.6
 const ENDING_DIM_COLOR = "#3d3a5c"
 const ENDING_UNICORN_AT = ENDING_ASSEMBLE_START + (ENDING_TEXT.length - 1) * ENDING_LETTER_GAP + ENDING_FLIGHT + 0.2
-export const ENDING_MENU_AT = LIFTOFF + END_IRIS_START + END_IRIS_FOCUS + END_IRIS_HOLD + END_IRIS_CLOSE + ENDING_UNICORN_AT
+const ENDING_TITLE_RAISED_Y = 0.2
+export const ENDING_START = LIFTOFF + END_IRIS_START + END_IRIS_FOCUS + END_IRIS_HOLD + END_IRIS_CLOSE
+export const ENDING_MENU_AT = ENDING_START + ENDING_UNICORN_AT
 const ENDING_DANCE_BEATS_PER_SECOND = 2.2
 const ENDING_SPARKLES = Array.from({ length: 7 }, (_, index) => [(index / 7) * Math.PI * 2, mix(48, 70, seededRandom(index, 191))] as const)
 const CAMERA_LOCK = 0.05
@@ -1650,7 +1653,7 @@ const drawSkippingRadi = (context: Context, width: number, height: number, baseS
   context.restore()
 }
 
-export const drawCosmodromeScene = (context: Context, width: number, height: number, time: number, sceneSeconds: number, wishSeconds: number | null, flightDuration: number, thrill: FlightThrill = CALM_FLIGHT) => {
+export const drawCosmodromeScene = (context: Context, width: number, height: number, time: number, sceneSeconds: number, wishSeconds: number | null, flightDuration: number, thrill: FlightThrill = CALM_FLIGHT, outroPlayback: OutroPlayback | null = null) => {
   const horizonY = height * 0.62
   const feetY = height * RADI_FEET
   const scale = radiScale(width, height)
@@ -1710,10 +1713,10 @@ export const drawCosmodromeScene = (context: Context, width: number, height: num
   }
   context.restore()
   if (sceneSeconds < IRIS_IN_END) paintIris(context, width, height, width / 2, feetY - 60 * scale, Math.hypot(width, height) * clampToUnit(sceneSeconds / IRIS_IN_END) ** 2)
-  drawEndingIris(context, width, height, camX, launch, wish - LIFTOFF)
+  drawEndingIris(context, width, height, camX, launch, wish - LIFTOFF, outroPlayback)
 }
 
-const drawEndingIris = (context: Context, width: number, height: number, camX: number, launch: LaunchState, flightSeconds: number) => {
+const drawEndingIris = (context: Context, width: number, height: number, camX: number, launch: LaunchState, flightSeconds: number, outroPlayback: OutroPlayback | null) => {
   if (flightSeconds < END_IRIS_START) return
   const { unit, baseX, baseY } = rocketLayout(width, height, camX)
   const focusY = baseY - ROCKET_MIDDLE * unit - launch.riseY + launch.camY
@@ -1723,11 +1726,13 @@ const drawEndingIris = (context: Context, width: number, height: number, camX: n
   const close = stageProgress(flightSeconds, closeStart, closeStart + END_IRIS_CLOSE)
   const windowRadius = WINDOW_RADIUS * unit * launch.zoom
   paintIris(context, width, height, baseX, windowY, mix(Math.hypot(width, height), windowRadius, focus) * (1 - close ** 2))
-  drawEndingTitle(context, width, height, flightSeconds - closeStart - END_IRIS_CLOSE)
-  drawEndingUnicorn(context, width, height, flightSeconds - closeStart - END_IRIS_CLOSE)
+  const sinceBlack = flightSeconds - closeStart - END_IRIS_CLOSE
+  drawEndingTitle(context, width, height, sinceBlack, easeInOut(karaokeRise(outroPlayback)))
+  drawEndingKaraoke(context, width, height, outroPlayback)
+  drawEndingUnicorn(context, width, height, sinceBlack)
 }
 
-const drawEndingTitle = (context: Context, width: number, height: number, sinceBlack: number) => {
+const drawEndingTitle = (context: Context, width: number, height: number, sinceBlack: number, rise: number) => {
   if (sinceBlack <= 0) return
   const letters = [...ENDING_TEXT]
   let fontSize = Math.min(width * 0.085, height * 0.14)
@@ -1746,7 +1751,7 @@ const drawEndingTitle = (context: Context, width: number, height: number, sinceB
     const targetX = slotX + widths[index] / 2
     slotX += widths[index]
     if (letter === " ") return
-    const targetY = height / 2
+    const targetY = height * mix(0.5, ENDING_TITLE_RAISED_Y, rise)
     const landAt = ENDING_ASSEMBLE_START + index * ENDING_LETTER_GAP + ENDING_FLIGHT
     const flight = stageProgress(sinceBlack, landAt - ENDING_FLIGHT, landAt)
     const lit = stageProgress(sinceBlack, landAt - 0.05, landAt + 0.2)

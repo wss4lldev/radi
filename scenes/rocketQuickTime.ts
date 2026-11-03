@@ -34,7 +34,9 @@ export const activeQuickTime = (wishSeconds: number, starts: readonly number[]) 
 export const isInGoodWindow = (wishSeconds: number, start: number) =>
   wishSeconds >= closesAt(start) - GOOD_EARLY_SECONDS && wishSeconds < closesAt(start) + GOOD_LATE_SECONDS
 
-export const missedQuickTime = (wishSeconds: number, start: number) => wishSeconds >= closesAt(start) + GOOD_LATE_SECONDS
+export const quickTimeMissAt = (start: number) => closesAt(start) + GOOD_LATE_SECONDS
+
+export const missedQuickTime = (wishSeconds: number, start: number) => wishSeconds >= quickTimeMissAt(start)
 
 export const isOnQuickTimeKey = (width: number, height: number, wishSeconds: number, flightDuration: number, x: number, y: number) => {
   const { x: centerX, y: centerY } = rocketMiddleOnScreen(width, height, wishSeconds, flightDuration)

@@ -145,7 +145,7 @@ canvas {
 .ending-menu {
   position: fixed;
   z-index: 2;
-  top: 18%;
+  top: 4%;
   left: 50%;
   display: flex;
   gap: 16px;

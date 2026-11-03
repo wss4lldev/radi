@@ -9,6 +9,7 @@ export const FILM_SCENES = [
   { id: "nature", name: "6. Nature Walk", meetingStartSeconds: KIRA_SCENE_END },
   { id: "cosmodrome", name: "7. Cosmodrome", meetingStartSeconds: KIRA_SCENE_END },
   { id: "rocketLaunch", name: "8. Rocket Launch", meetingStartSeconds: KIRA_SCENE_END },
+  { id: "credits", name: "9. Credits", meetingStartSeconds: KIRA_SCENE_END },
 ] as const
 
 export type FilmSceneId = (typeof FILM_SCENES)[number]["id"]
