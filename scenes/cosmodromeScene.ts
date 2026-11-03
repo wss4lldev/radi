@@ -4,6 +4,7 @@ import { type PartyPose } from "@/characters/partyPerson"
 import { drawRadi, drawStarSparkle, RAINBOW, type Point, type RadiExpression } from "@/characters/radi"
 import { astronautRadiLook, sunnyRadiLook, unicornRadiLook } from "@/characters/radiConcepts"
 import { drawShadesDudeFront } from "@/characters/shadesDude"
+import { drawEndingDj, endingStage } from "@/scenes/endingDj"
 import { drawEndingKaraoke, karaokeRise, type OutroPlayback } from "@/scenes/endingKaraoke"
 import { easeInOut, seededRandom } from "@/scenes/libraryScene"
 import { bounce, clampToUnit, drawCloud, easeOut, easeOutBack, heartPath, mix, mixPoint, comicBubbleWidth, paintComicBubble, paintIris, radiScale, stageProgress, type BubbleButtonLayout } from "@/scenes/openingScene"
@@ -153,7 +154,9 @@ const ENDING_LETTER_GAP = 0.09
 const ENDING_FLIGHT = 0.6
 const ENDING_DIM_COLOR = "#3d3a5c"
 const ENDING_UNICORN_AT = ENDING_ASSEMBLE_START + (ENDING_TEXT.length - 1) * ENDING_LETTER_GAP + ENDING_FLIGHT + 0.2
-const ENDING_TITLE_RAISED_Y = 0.2
+const ENDING_TITLE_START_Y = 0.38
+const ENDING_TITLE_RAISED_Y = 0.25
+const ENDING_FEET_Y = 0.95
 export const ENDING_START = LIFTOFF + END_IRIS_START + END_IRIS_FOCUS + END_IRIS_HOLD + END_IRIS_CLOSE
 export const ENDING_MENU_AT = ENDING_START + ENDING_UNICORN_AT
 const ENDING_DANCE_BEATS_PER_SECOND = 2.2
@@ -1727,9 +1730,14 @@ const drawEndingIris = (context: Context, width: number, height: number, camX: n
   const windowRadius = WINDOW_RADIUS * unit * launch.zoom
   paintIris(context, width, height, baseX, windowY, mix(Math.hypot(width, height), windowRadius, focus) * (1 - close ** 2))
   const sinceBlack = flightSeconds - closeStart - END_IRIS_CLOSE
-  drawEndingTitle(context, width, height, sinceBlack, easeInOut(karaokeRise(outroPlayback)))
+  const rise = karaokeRise(outroPlayback)
+  const feetY = height * ENDING_FEET_Y
+  const scale = Math.min((height * 0.33) / 125, (width * 0.5) / 125)
+  drawEndingTitle(context, width, height, sinceBlack, easeInOut(rise))
   drawEndingKaraoke(context, width, height, outroPlayback)
-  drawEndingUnicorn(context, width, height, sinceBlack)
+  const stage = endingStage(width, scale)
+  drawEndingUnicorn(context, mix(width / 2, stage.radiX, easeInOut(rise)), feetY, scale, sinceBlack)
+  drawEndingDj(context, width, stage, feetY, outroPlayback, rise)
 }
 
 const drawEndingTitle = (context: Context, width: number, height: number, sinceBlack: number, rise: number) => {
@@ -1751,7 +1759,7 @@ const drawEndingTitle = (context: Context, width: number, height: number, sinceB
     const targetX = slotX + widths[index] / 2
     slotX += widths[index]
     if (letter === " ") return
-    const targetY = height * mix(0.5, ENDING_TITLE_RAISED_Y, rise)
+    const targetY = height * mix(ENDING_TITLE_START_Y, ENDING_TITLE_RAISED_Y, rise)
     const landAt = ENDING_ASSEMBLE_START + index * ENDING_LETTER_GAP + ENDING_FLIGHT
     const flight = stageProgress(sinceBlack, landAt - ENDING_FLIGHT, landAt)
     const lit = stageProgress(sinceBlack, landAt - 0.05, landAt + 0.2)
@@ -1784,12 +1792,10 @@ const drawEndingTitle = (context: Context, width: number, height: number, sinceB
   })
 }
 
-const drawEndingUnicorn = (context: Context, width: number, height: number, sinceBlack: number) => {
+const drawEndingUnicorn = (context: Context, radiX: number, feetY: number, scale: number, sinceBlack: number) => {
   const sinceEntrance = sinceBlack - ENDING_UNICORN_AT
   if (sinceEntrance <= 0) return
   const pop = easeOutBack(clampToUnit(sinceEntrance / 0.45))
-  const feetY = height * 0.95
-  const scale = Math.min((height * 0.33) / 125, (width * 0.5) / 125)
   const beat = sinceEntrance * ENDING_DANCE_BEATS_PER_SECOND
   const hopPhase = beat - Math.floor(beat)
   const { lift, stretchY } = bounce(hopPhase)
@@ -1803,12 +1809,12 @@ const drawEndingUnicorn = (context: Context, width: number, height: number, sinc
   ENDING_SPARKLES.forEach(([angle, reach], index) => {
     const twinkle = Math.max(0, Math.sin(sinceEntrance * 5 + index * 1.7))
     if (twinkle <= 0) return
-    const sparkleX = width / 2 + Math.cos(angle + sinceEntrance * 0.6) * reach * scale
+    const sparkleX = radiX + Math.cos(angle + sinceEntrance * 0.6) * reach * scale
     const sparkleY = feetY - 60 * scale + Math.sin(angle + sinceEntrance * 0.6) * reach * 0.8 * scale
     drawStarSparkle(context, sparkleX, sparkleY, 6 * scale * twinkle * pop, RAINBOW[index % RAINBOW.length])
   })
   context.save()
-  context.translate(width / 2, feetY - lift * 12 * scale)
+  context.translate(radiX, feetY - lift * 12 * scale)
   context.rotate(swing * 0.07)
   context.scale(pop / stretchY, pop * stretchY)
   drawRadi(context, unicornRadiLook, 0, 0, scale, {

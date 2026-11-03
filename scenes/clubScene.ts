@@ -1,6 +1,6 @@
-import { ellipsePath, linePath, paintFill, paintLine, paintShape, type Context } from "@/characters/paint"
+import { ellipsePath, linePath, paintFill, paintLine, paintShape, type BuildPath, type Context } from "@/characters/paint"
 import { OUTLINE, OUTLINE_WIDTH, SILVER, drawRadi, type Point, type RadiLook } from "@/characters/radi"
-import { drawKiraFront } from "@/characters/kira"
+import { drawKiraFront, FUR as KIRA_FUR } from "@/characters/kira"
 import { drawPartyPerson, type PartyPerson, type PartyPose } from "@/characters/partyPerson"
 import { nightClubRadiLook } from "@/characters/radiConcepts"
 import { prepareSceneSprites, releaseSceneSprites } from "@/characters/sprites"
@@ -137,6 +137,8 @@ const KIRA_DJ_AT = 27
 const KIRA_DJ_PUFF_LEAD = 0.4
 const KIRA_DJ_SIZE = 1.3
 const KIRA_DJ_RAISE = 8
+const KIRA_SHOULDER_X = 6
+const KIRA_SHOULDER_Y = -30
 const DJ_SWAP_PUFFS = Array.from({ length: 12 }, (_, index) => [(index / 12) * Math.PI * 2, 18 + (index % 3) * 8, 14 + (index % 4) * 3, ["255, 111, 181", "155, 93, 229", "255, 255, 255"][index % 3]] as const)
 const DANCERS: readonly Dancer[] = [
   {
@@ -451,14 +453,37 @@ const drawCrowd = (context: Context, width: number, height: number, time: number
   })
 }
 
-const drawKiraDj = (context: Context, centerX: number, feetY: number, djScale: number, time: number, beat: number) => {
+export type KiraArm = { paw: Point; elbow?: Point }
+
+export const kiraDjShoulder = (side: number, beat: number): Point => [side * KIRA_SHOULDER_X * KIRA_DJ_SIZE, KIRA_SHOULDER_Y * KIRA_DJ_SIZE - KIRA_DJ_RAISE - beat * 2.5]
+
+const drawPawsOnDecks = (context: Context, outside: DOMMatrix, centerX: number, feetY: number, djScale: number, arms: readonly [KiraArm, KiraArm]) => {
+  const toKira = context.getTransform().inverse().multiply(outside)
+  const inKira = ([x, y]: Point) => toKira.transformPoint(new DOMPoint(centerX + x * djScale, feetY + y * djScale))
+  arms.forEach(({ paw: boothPaw, elbow }, index) => {
+    const paw = inKira(boothPaw)
+    const bend = elbow && inKira(elbow)
+    const armPath: BuildPath = (path) => {
+      path.moveTo((index === 0 ? -1 : 1) * KIRA_SHOULDER_X, KIRA_SHOULDER_Y)
+      if (bend) path.lineTo(bend.x, bend.y)
+      path.lineTo(paw.x, paw.y)
+    }
+    paintLine(context, OUTLINE, 7, armPath)
+    paintLine(context, KIRA_FUR, 4.6, armPath)
+    paintShape(context, KIRA_FUR, ellipsePath(paw.x, paw.y, 3.8, 2.6))
+    for (const toeX of [-1.2, 1.2]) paintLine(context, OUTLINE, 0.6, linePath(paw.x + toeX, paw.y + 0.6, paw.x + toeX, paw.y + 2.4))
+  })
+}
+
+export const drawKiraDj = (context: Context, centerX: number, feetY: number, djScale: number, time: number, beat: number, arms?: readonly [KiraArm, KiraArm]) => {
   const kiraScale = djScale * KIRA_DJ_SIZE
   const kiraFeetY = feetY - KIRA_DJ_RAISE * djScale - beat * 2.5 * djScale
+  const outside = context.getTransform()
   context.save()
   context.translate(centerX, kiraFeetY)
   context.rotate(Math.sin(time * GROOVE_RATE) * 0.08)
   context.translate(-centerX, -kiraFeetY)
-  drawKiraFront(context, centerX, kiraFeetY, kiraScale)
+  drawKiraFront(context, centerX, kiraFeetY, kiraScale, !arms)
   context.translate(centerX, kiraFeetY)
   context.scale(kiraScale, kiraScale)
   context.lineJoin = "round"
@@ -480,6 +505,7 @@ const drawKiraDj = (context: Context, centerX: number, feetY: number, djScale: n
     })
   }
   paintLine(context, OUTLINE, 1.2, linePath(-2.5, -55, 2.5, -55))
+  if (arms) drawPawsOnDecks(context, outside, centerX, feetY, djScale, arms)
   context.restore()
 }
 
@@ -499,21 +525,22 @@ const drawDjSwapPuff = (context: Context, width: number, height: number, scale: 
   })
 }
 
-const drawDjBooth = (context: Context, width: number, height: number, time: number, scale: number, clubSeconds: number, specialMove: SpecialMove | null) => {
-  const djScale = scale * DJ_SCALE
-  const feetY = height * DJ_DESK_TOP + 28 * djScale
-  const beat = Math.abs(Math.sin(time * GROOVE_RATE))
-  const inBoothUnits = (drawInBooth: () => void) => {
-    context.save()
-    context.translate(width / 2, feetY)
-    context.scale(djScale, djScale)
-    context.lineJoin = "round"
-    context.lineWidth = OUTLINE_WIDTH
-    context.strokeStyle = OUTLINE
-    drawInBooth()
-    context.restore()
-  }
-  inBoothUnits(() => {
+export const DJ_PANEL = { left: -48, top: -28, width: 96, height: 34 } as const
+export const DJ_RECORD_X = 24
+
+const inDjUnits = (context: Context, centerX: number, feetY: number, djScale: number, drawInBooth: () => void) => {
+  context.save()
+  context.translate(centerX, feetY)
+  context.scale(djScale, djScale)
+  context.lineJoin = "round"
+  context.lineWidth = OUTLINE_WIDTH
+  context.strokeStyle = OUTLINE
+  drawInBooth()
+  context.restore()
+}
+
+export const drawDjDeck = (context: Context, centerX: number, feetY: number, djScale: number, time: number, beat: number) =>
+  inDjUnits(context, centerX, feetY, djScale, () => {
     for (const side of [-1, 1]) {
       const speakerX = side * 62
       paintShape(context, "#2a2440", (path) => path.roundRect(speakerX - 15, -66, 30, 72, 3))
@@ -532,11 +559,23 @@ const drawDjBooth = (context: Context, width: number, height: number, time: numb
     })
     for (const side of [-1, 1]) {
       const spin = time * 8 * side
-      paintShape(context, "#15121f", ellipsePath(side * 24, -31, 11, 2.6))
-      paintFill(context, partyColor(side + 1, time, 1), ellipsePath(side * 24, -31, 3, 0.8))
-      paintLine(context, "rgba(255, 255, 255, 0.5)", 0.6, linePath(side * 24, -31, side * 24 + Math.cos(spin) * 9, -31 + Math.sin(spin) * 2.1))
+      paintShape(context, "#15121f", ellipsePath(side * DJ_RECORD_X, -31, 11, 2.6))
+      paintFill(context, partyColor(side + 1, time, 1), ellipsePath(side * DJ_RECORD_X, -31, 3, 0.8))
+      paintLine(context, "rgba(255, 255, 255, 0.5)", 0.6, linePath(side * DJ_RECORD_X, -31, side * DJ_RECORD_X + Math.cos(spin) * 9, -31 + Math.sin(spin) * 2.1))
     }
   })
+
+export const drawDjPanel = (context: Context, centerX: number, feetY: number, djScale: number, time: number) =>
+  inDjUnits(context, centerX, feetY, djScale, () => {
+    paintShape(context, "#2a2440", (path) => path.rect(DJ_PANEL.left, DJ_PANEL.top, DJ_PANEL.width, DJ_PANEL.height))
+    paintLine(context, partyColor(0, time, 0.9), 2.5, linePath(DJ_PANEL.left, DJ_PANEL.top + DJ_PANEL.height, DJ_PANEL.left + DJ_PANEL.width, DJ_PANEL.top + DJ_PANEL.height))
+  })
+
+const drawDjBooth = (context: Context, width: number, height: number, time: number, scale: number, clubSeconds: number, specialMove: SpecialMove | null) => {
+  const djScale = scale * DJ_SCALE
+  const feetY = height * DJ_DESK_TOP + 28 * djScale
+  const beat = Math.abs(Math.sin(time * GROOVE_RATE))
+  drawDjDeck(context, width / 2, feetY, djScale, time, beat)
   const hype = Math.max(0, Math.sin(time * 1.5))
   const isKiraDj = clubSeconds >= KIRA_DJ_AT
   const djFrame = specialMoveFrame(specialMove, 0.5 * SPECIAL_MOVE_WAVE, 22 * djScale, 50 * djScale)
@@ -550,13 +589,12 @@ const drawDjBooth = (context: Context, width: number, height: number, time: numb
       hands: [mixPoint([-24, -33], [-22, -66 + Math.sin(time * GROOVE_RATE * 2) * 3], hype), [24 + Math.sin(time * 10) * 3, -33]],
     }, "club")
   })
-  inBoothUnits(() => {
-    paintShape(context, "#2a2440", (path) => path.rect(-48, -28, 96, 34))
+  drawDjPanel(context, width / 2, feetY, djScale, time)
+  inDjUnits(context, width / 2, feetY, djScale, () => {
     for (let barIndex = 0; barIndex < 12; barIndex += 1) {
       const barHeight = 4 + Math.abs(Math.sin(time * 6 + barIndex * 1.7)) * 18
       paintFill(context, partyColor(barIndex, time, 0.9), (path) => path.rect(-41 + barIndex * 7, 2 - barHeight, 4, barHeight))
     }
-    paintLine(context, partyColor(0, time, 0.9), 2.5, linePath(-48, 6, 48, 6))
   })
 }
 

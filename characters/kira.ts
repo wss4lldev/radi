@@ -1,7 +1,7 @@
 import { ellipsePath, linePath, paintFill, paintLine, paintShade, paintShape, type BuildPath, type Context, type DecorateInside } from "@/characters/paint"
 import { BLUSH, OUTLINE, OUTLINE_WIDTH, PUPIL, SHADE, TONGUE, WHITE, curvesPath, paintTube } from "@/characters/radi"
 
-const FUR = "#fbfaf6"
+export const FUR = "#fbfaf6"
 const FAR_FUR = "#e4e0d8"
 const SPOT = "#2a2522"
 const SIDE_SHIFT_UNITS = 7
@@ -246,7 +246,7 @@ const frontEarPath = (side: number): BuildPath => (path) => {
   path.closePath()
 }
 
-export const drawKiraFront = (context: Context, feetX: number, feetY: number, scale: number) => {
+export const drawKiraFront = (context: Context, feetX: number, feetY: number, scale: number, showLegs = true) => {
   drawInUnits(context, feetX, feetY, scale, (kiraContext) => {
     paintFurShape(kiraContext, FUR, (path) => {
       path.moveTo(7, -29)
@@ -254,10 +254,12 @@ export const drawKiraFront = (context: Context, feetX: number, feetY: number, sc
       path.quadraticCurveTo(14.5, -27, 8, -24)
       path.closePath()
     })
-    for (const side of [-1, 1]) drawLeg(kiraContext, FAR_FUR, linePath(side * 9.5, -22, side * 10, -3.5), side * 10, -2.4, 3.2)
+    if (showLegs) for (const side of [-1, 1]) drawLeg(kiraContext, FAR_FUR, linePath(side * 9.5, -22, side * 10, -3.5), side * 10, -2.4, 3.2)
     paintFurShape(kiraContext, FUR, ellipsePath(0, -26, 11.5, 10.5), (chestContext) => paintSpots(chestContext, SPOTS_ON_FRONT_CHEST))
-    for (const side of [-1, 1]) drawLeg(kiraContext, FUR, linePath(side * 5, -24, side * 5.5, -3.5), side * 5.5, -2.4, 3.6)
-    paintSpots(kiraContext, [[-5.2, -13, 1.1, 1], [5.6, -9, 1, 0.9]])
+    if (showLegs) {
+      for (const side of [-1, 1]) drawLeg(kiraContext, FUR, linePath(side * 5, -24, side * 5.5, -3.5), side * 5.5, -2.4, 3.6)
+      paintSpots(kiraContext, [[-5.2, -13, 1.1, 1], [5.6, -9, 1, 0.9]])
+    }
 
     for (const headPath of [frontSkullPath, frontMuzzlePath]) paintLine(kiraContext, OUTLINE, OUTLINE_WIDTH * 2, headPath)
     paintFill(kiraContext, FUR, frontSkullPath)

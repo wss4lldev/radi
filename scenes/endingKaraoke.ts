@@ -1,13 +1,12 @@
 import { type Context } from "@/characters/paint"
 import { OUTLINE, RAINBOW } from "@/characters/radi"
-import { BEAT_HISTORY } from "@/audio/outroWave"
 import { OUTRO_LYRICS, type LyricLine } from "@/scenes/endingLyrics"
 import { clampToUnit, mix } from "@/scenes/openingScene"
 
 export type OutroPlayback = { songIndex: number; seconds: number; beatHistory: readonly number[] | null }
 
 const FONT_STACK = `"Comic Sans MS", "Comic Sans", "Comic Neue", cursive`
-const LYRIC_Y = 0.36
+const LYRIC_Y = 0.45
 const LYRIC_MAX_WIDTH = 0.9
 const LINE_LEAD = 1.2
 const LINE_LINGER = 0.4
@@ -20,17 +19,6 @@ const BALL_SIZE = 0.24
 const BALL_TRAIL = 5
 const BALL_TRAIL_STEP = 0.035
 const KARAOKE_RISE = 0.6
-const WAVE_Y = 0.47
-const WAVE_WIDTH = 0.2
-const WAVE_HEIGHT = 0.04
-const WAVE_MIN_RANGE = 0.12
-const WAVE_PUNCH = 1.5
-const KICK_FRAMES = 14
-const KICK_BASELINE_FROM = 4
-const KICK_BASELINE_TO = 24
-const KICK_GAIN = 2
-const KICK_STRETCH = 0.6
-const KICK_SHAKE = 0.008
 const DIM_FILL = "#5a5680"
 const KARAOKE_SONG = OUTRO_LYRICS.findIndex((lines) => lines.length > 0)
 
@@ -42,7 +30,7 @@ export const karaokeRise = (outro: OutroPlayback | null) => {
 
 const wordStart = (line: LyricLine, index: number) => line.words[index][0]
 
-const rainbowGradient = (context: Context, left: number, span: number) => {
+export const rainbowGradient = (context: Context, left: number, span: number) => {
   const gradient = context.createLinearGradient(left, 0, left + span, 0)
   RAINBOW.forEach((color, index) => gradient.addColorStop(index / (RAINBOW.length - 1), color))
   return gradient
@@ -148,78 +136,9 @@ const drawBall = (context: Context, line: LyricLine, layout: LineLayout, y: numb
   context.restore()
 }
 
-const kickStrength = (history: readonly number[], range: number, age: number) => {
-  const baseline = history.slice(age + KICK_BASELINE_FROM, age + KICK_BASELINE_TO)
-  if (baseline.length === 0) return 0
-  const average = baseline.reduce((sum, level) => sum + level, 0) / baseline.length
-  return clampToUnit(((history[age] - average) / range) * KICK_GAIN)
-}
-
-const drawSoundWave = (context: Context, width: number, height: number, outro: OutroPlayback, appear: number) => {
-  const history = outro.beatHistory ?? []
-  const quietest = Math.min(...history, 1)
-  const range = Math.max(Math.max(...history, 0) - quietest, WAVE_MIN_RANGE)
-  const beats = history.map((level) => ((level - quietest) / range) ** WAVE_PUNCH)
-  const kicks = Array.from({ length: KICK_FRAMES }, (_, age) => kickStrength(history, range, age) * (1 - age / KICK_FRAMES) ** 2)
-  const kickAge = kicks.reduce((strongest, kick, age) => (kick > kicks[strongest] ? age : strongest), 0)
-  const kick = kicks[kickAge]
-  const span = width * WAVE_WIDTH
-  const shake = span * KICK_SHAKE * kick
-  const centerX = width / 2 + Math.sin(outro.seconds * 97) * shake
-  const centerY = height * WAVE_Y + Math.cos(outro.seconds * 83) * shake
-  const reach = Math.min(height * WAVE_HEIGHT, span * 0.2)
-  const barGap = span / 2 / BEAT_HISTORY
-  const beatColor = RAINBOW[Math.floor(outro.seconds * 4) % RAINBOW.length]
-  context.save()
-  context.globalAlpha = appear * kick * 0.45
-  context.translate(centerX, centerY)
-  context.scale(1, 0.35)
-  const bloom = context.createRadialGradient(0, 0, 0, 0, 0, span * 0.6)
-  bloom.addColorStop(0, beatColor)
-  bloom.addColorStop(1, `${beatColor}00`)
-  context.fillStyle = bloom
-  context.fillRect(-span * 0.6, -span * 0.6, span * 1.2, span * 1.2)
-  context.restore()
-  const ringProgress = kickAge / KICK_FRAMES
-  const ringRadius = mix(span * 0.1, span * 0.6, ringProgress)
-  context.save()
-  context.globalAlpha = appear * kick
-  context.lineWidth = Math.max(1.5, reach * 0.08 * (1 - ringProgress))
-  context.strokeStyle = beatColor
-  context.beginPath()
-  context.ellipse(centerX, centerY, ringRadius, ringRadius * 0.3, 0, 0, Math.PI * 2)
-  context.stroke()
-  context.restore()
-  context.save()
-  context.globalAlpha = appear
-  context.lineCap = "round"
-  context.beginPath()
-  context.moveTo(centerX - span / 2, centerY)
-  context.lineTo(centerX + span / 2, centerY)
-  beats.forEach((beat, index) => {
-    const barHeight = reach * (0.06 + 0.94 * beat) * (1 - index / BEAT_HISTORY) * (1 + kick * KICK_STRETCH)
-    for (const side of [-1, 1]) {
-      const x = centerX + side * (index + 0.5) * barGap
-      context.moveTo(x, centerY - barHeight)
-      context.lineTo(x, centerY + barHeight)
-    }
-  })
-  context.shadowColor = beatColor
-  context.shadowBlur = reach * (0.3 + kick * 2.5)
-  context.lineWidth = Math.max(1, barGap * 0.55)
-  context.strokeStyle = rainbowGradient(context, centerX - span / 2, span)
-  context.stroke()
-  context.globalAlpha = appear * kick * 0.85
-  context.shadowColor = "#ffffff"
-  context.strokeStyle = "#ffffff"
-  context.stroke()
-  context.restore()
-}
-
 export const drawEndingKaraoke = (context: Context, width: number, height: number, outro: OutroPlayback | null) => {
   const appear = karaokeRise(outro)
   if (!outro || appear <= 0) return
-  drawSoundWave(context, width, height, outro, appear)
   const lines = OUTRO_LYRICS[outro.songIndex] ?? []
   const lineIndex = visibleLineIndex(lines, outro.seconds)
   if (lineIndex < 0) return
