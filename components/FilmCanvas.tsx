@@ -33,6 +33,7 @@ import { createEngineRev } from "@/audio/engineRev"
 import { createKiraWoof } from "@/audio/kiraWoof"
 import { createFootsteps } from "@/audio/footsteps"
 import { createHeroReveal } from "@/audio/heroReveal"
+import { createWinChime } from "@/audio/winChime"
 import { createLibraryCrash } from "@/audio/libraryCrash"
 import { createOutroWave } from "@/audio/outroWave"
 import { createRocketLaunch } from "@/audio/rocketLaunch"
@@ -42,8 +43,10 @@ import { createDressSwirl } from "@/audio/dressSwirl"
 import { SceneSelect } from "@/components/SceneSelect"
 import { useFilmStore } from "@/store/film"
 
+const MAX_PIXEL_RATIO = 1.25
+
 const resizeCanvas = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
-  const ratio = window.devicePixelRatio || 1
+  const ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO)
   canvas.width = Math.floor(window.innerWidth * ratio)
   canvas.height = Math.floor(window.innerHeight * ratio)
   canvas.style.width = `${window.innerWidth}px`
@@ -270,6 +273,7 @@ export const FilmCanvas = () => {
     const spaceReveal = createSpaceReveal(SMOKE_START, SUIT_AT)
     const libraryCrash = createLibraryCrash(LIBRARY_FALL_START, LIBRARY_LANDING_SECONDS)
     const heroReveal = createHeroReveal(LIBRARY_HERO_REVEAL)
+    const winChime = createWinChime()
     const dressSwirl = createDressSwirl(SWIRL_START, LOOK_SWAP)
     let arrivalStartMilliseconds: number | null = null
     let kiraStartMilliseconds: number | null = null
@@ -818,6 +822,7 @@ export const FilmCanvas = () => {
       if (libraryQuizPhase !== "captain" || wrongStartMilliseconds !== null || cheerStartMilliseconds !== null) return
       captainChoice = choice
       if (choice === "janeway") {
+        winChime.play()
         cheerStartMilliseconds = performance.now()
         cheerQuestionStarted = false
         return
@@ -828,6 +833,7 @@ export const FilmCanvas = () => {
       if (libraryQuizPhase !== "joke" || wrongStartMilliseconds !== null || cheerStartMilliseconds !== null) return
       jokeChoice = choice
       if (choice === "catastrophe") {
+        winChime.play()
         cheerStartMilliseconds = performance.now()
         cheerQuestionStarted = false
         return
@@ -941,6 +947,7 @@ export const FilmCanvas = () => {
       spaceReveal.stop()
       libraryCrash.stop()
       heroReveal.stop()
+      winChime.stop()
       dressSwirl.stop()
     }
   }, [])

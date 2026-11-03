@@ -1,7 +1,7 @@
 const HERO_NOTES = [146.83, 220, 293.66, 349.23, 440]
 const UNICORN_NOTES = [523.25, 659.25, 783.99, 1046.5, 1318.5]
 
-const tone = (audio: AudioContext, frequency: number, start: number, duration: number, type: OscillatorType, level: number) => {
+export const tone = (audio: AudioContext, frequency: number, start: number, duration: number, type: OscillatorType, level: number) => {
   const osc = audio.createOscillator()
   const gain = audio.createGain()
   osc.type = type

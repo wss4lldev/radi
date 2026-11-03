@@ -433,7 +433,7 @@ const partyPose = (move: PartyMove, groove: number, amazement: number, amazedHan
     sway: beat * 2,
     headTilt: Math.sin(groove * 0.5) * 0.12 * (1 - amazement),
     footLifts: [Math.max(0, beat) * 3, Math.max(0, -beat) * 3],
-    lookUp: amazement,
+    lookUp: amazement > 0.5 ? 1 : 0,
   }
 }
 
@@ -696,8 +696,10 @@ export const drawClubScene = (context: Context, width: number, height: number, t
     context.fillStyle = "#0d0626"
     context.fillRect(0, 0, width, height)
   }
+  const pixelRatio = context.getTransform().a
+  const snapToPixel = (offset: number) => Math.round(offset * pixelRatio) / pixelRatio
   context.save()
-  context.translate(Math.sin(time * 90) * shake, Math.cos(time * 73) * shake)
+  context.translate(snapToPixel(Math.sin(time * 90) * shake), snapToPixel(Math.cos(time * 73) * shake))
   drawClubRoom(context, width, height, grooveTime)
   drawDanceFloor(context, width, height, grooveTime)
   drawDjBooth(context, width, height, grooveTime, scale, clubSeconds, specialMove)

@@ -582,7 +582,7 @@ const drawHeadwear = (context: Context, person: PartyPerson) => {
 
 export const drawPartyPerson = (context: Context, person: PartyPerson, feetX: number, feetY: number, scale: number, pose: PartyPose, spriteScene?: string) => {
   const build = BUILDS[person.build]
-  const spriteKey = spriteScene && `${spriteScene}:${JSON.stringify(person)}`
+  const spriteKey = spriteScene && `${spriteScene}:${JSON.stringify({ ...person, face: undefined })}`
   const paintPart: PaintPart = (part, bounds, drawPart) => {
     if (spriteKey) paintSprite(context, `${spriteKey}:${part}`, 0, 0, bounds, drawPart)
     else drawPart(context)
@@ -617,7 +617,7 @@ export const drawPartyPerson = (context: Context, person: PartyPerson, feetX: nu
       drawHairFront(partContext, person)
       drawHeadwear(partContext, person)
     }
-    if (pose.lookUp === 0 || pose.lookUp === 1) paintPart(`head ${pose.lookUp}`, HEAD_BOUNDS, drawHeadFront)
+    if (pose.lookUp === 0 || pose.lookUp === 1) paintPart(`head ${pose.lookUp} ${person.face}`, HEAD_BOUNDS, drawHeadFront)
     else drawHeadFront(context)
   })
   drawArms(context, person, build, pose.hands)
