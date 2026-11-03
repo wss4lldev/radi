@@ -44,6 +44,7 @@ import { SceneSelect } from "@/components/SceneSelect"
 import { useFilmStore } from "@/store/film"
 
 const MAX_PIXEL_RATIO = 1.25
+const LYRIC_DELAY_SECONDS = 0.15
 
 const resizeCanvas = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
   const ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO)
@@ -452,7 +453,7 @@ export const FilmCanvas = () => {
       pinnedScrollY = !isShowingConcepts && cosmodromeSeconds === null && natureSeconds !== null && natureSeconds >= HORO_START ? (pinnedScrollY ?? window.scrollY) : null
       horoSteps += (horoTargetSteps - horoSteps) * (1 - Math.exp(-elapsedSeconds * 5))
       if (pinnedScrollY !== null) horoIdleSteps += elapsedSeconds * HORO_IDLE_STEPS_PER_SECOND * Math.max(0, 1 - Math.abs(horoTargetSteps - horoSteps) * 4)
-      const outroPlayback = endSongStarted ? { songIndex: outroIndex, seconds: outroChain[outroIndex].currentTime, beatHistory: outroWave.read(timeMilliseconds) } : null
+      const outroPlayback = endSongStarted ? { songIndex: outroIndex, seconds: Math.max(0, outroChain[outroIndex].currentTime - outroWave.latency() - LYRIC_DELAY_SECONDS), beatHistory: outroWave.read(timeMilliseconds) } : null
       const shakingBoring = libraryQuizPhase === "final" && boringShakeStartMilliseconds !== null && timeMilliseconds - boringShakeStartMilliseconds < 1000 && finalChoice === null
       if (isShowingConcepts) {
         context.fillStyle = "#000000"

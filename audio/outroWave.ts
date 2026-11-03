@@ -7,6 +7,7 @@ const SAMPLE_MILLISECONDS = 1000 / 60
 export const createOutroWave = (songs: readonly HTMLAudioElement[]) => {
   const bins = new Uint8Array(FFT_SIZE / 2)
   let analyser: AnalyserNode | null = null
+  let outputContext: AudioContext | null = null
   let hasStarted = false
   let beatHistory: number[] = []
   let lastSampleAt = 0
@@ -23,6 +24,7 @@ export const createOutroWave = (songs: readonly HTMLAudioElement[]) => {
         node.connect(audio.destination)
         songs.forEach((song) => audio.createMediaElementSource(song).connect(node))
         analyser = node
+        outputContext = audio
       }).catch(() => {})
     } catch {
       return
@@ -48,5 +50,7 @@ export const createOutroWave = (songs: readonly HTMLAudioElement[]) => {
     return beatHistory
   }
 
-  return { prime, read }
+  const latency = () => (outputContext ? (outputContext.baseLatency || 0) + (outputContext.outputLatency || 0) : 0)
+
+  return { prime, read, latency }
 }
