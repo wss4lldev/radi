@@ -13,6 +13,8 @@ const LINE_LEAD = 1.2
 const LINE_LINGER = 0.4
 const LINE_FADE = 0.3
 const WORD_MAX_FILL = 0.9
+const WORD_SHAKE_SECONDS = 0.18
+const WORD_SHAKE_SIZE = 0.07
 const BALL_HOP = 0.45
 const BALL_SIZE = 0.24
 const BALL_TRAIL = 5
@@ -28,6 +30,7 @@ const KICK_BASELINE_FROM = 4
 const KICK_BASELINE_TO = 24
 const KICK_GAIN = 2
 const KICK_STRETCH = 0.6
+const KICK_SHAKE = 0.012
 const DIM_FILL = "#5a5680"
 const KARAOKE_SONG = OUTRO_LYRICS.findIndex((lines) => lines.length > 0)
 
@@ -62,7 +65,7 @@ const layoutLine = (context: Context, line: LyricLine, width: number, baseFontSi
   const totalWidth = wordWidths.reduce((sum, wordWidth) => sum + wordWidth, 0) + spaceWidth * (line.words.length - 1)
   const left = width / 2 - totalWidth / 2
   const wordLefts = wordWidths.map((_, index) => left + wordWidths.slice(0, index).reduce((sum, wordWidth) => sum + wordWidth + spaceWidth, 0))
-  return { text, fontSize, left, totalWidth, wordLefts, wordWidths }
+  return { fontSize, left, totalWidth, wordLefts, wordWidths }
 }
 
 type LineLayout = ReturnType<typeof layoutLine>
@@ -74,13 +77,19 @@ const sungX = (line: LyricLine, layout: LineLayout, seconds: number) =>
     return sung > 0 ? layout.wordLefts[index] + layout.wordWidths[index] * sung : reached
   }, layout.left)
 
-const paintLineText = (context: Context, layout: LineLayout, y: number, fill: string | CanvasGradient) => {
+const wordShake = (sinceLanding: number, fontSize: number) => {
+  if (sinceLanding < 0 || sinceLanding >= WORD_SHAKE_SECONDS) return [0, 0] as const
+  const amount = (1 - sinceLanding / WORD_SHAKE_SECONDS) * fontSize * WORD_SHAKE_SIZE
+  return [Math.sin(sinceLanding * 90) * amount, Math.cos(sinceLanding * 70) * amount] as const
+}
+
+const paintLineText = (context: Context, line: LyricLine, layout: LineLayout, spots: readonly (readonly [number, number])[], fill: string | CanvasGradient) => {
   context.font = `bold ${layout.fontSize}px ${FONT_STACK}`
   context.lineWidth = layout.fontSize * 0.14
   context.strokeStyle = OUTLINE
-  context.strokeText(layout.text, layout.left, y)
+  line.words.forEach(([, word], index) => context.strokeText(word, ...spots[index]))
   context.fillStyle = fill
-  context.fillText(layout.text, layout.left, y)
+  line.words.forEach(([, word], index) => context.fillText(word, ...spots[index]))
 }
 
 const ballPosition = (line: LyricLine, layout: LineLayout, y: number, radius: number, seconds: number) => {
@@ -155,13 +164,14 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
   const kickAge = kicks.reduce((strongest, kick, age) => (kick > kicks[strongest] ? age : strongest), 0)
   const kick = kicks[kickAge]
   const span = width * WAVE_WIDTH
-  const centerX = width / 2
-  const centerY = height * WAVE_Y
+  const shake = span * KICK_SHAKE * kick
+  const centerX = width / 2 + Math.sin(outro.seconds * 97) * shake
+  const centerY = height * WAVE_Y + Math.cos(outro.seconds * 83) * shake
   const reach = Math.min(height * WAVE_HEIGHT, span * 0.2)
   const barGap = span / 2 / BEAT_HISTORY
   const beatColor = RAINBOW[Math.floor(outro.seconds * 4) % RAINBOW.length]
   context.save()
-  context.globalAlpha = appear * kick * 0.45
+  context.globalAlpha = appear * kick * 0.3
   context.translate(centerX, centerY)
   context.scale(1, 0.35)
   const bloom = context.createRadialGradient(0, 0, 0, 0, 0, span * 0.6)
@@ -173,7 +183,7 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
   const ringProgress = kickAge / KICK_FRAMES
   const ringRadius = mix(span * 0.1, span * 0.6, ringProgress)
   context.save()
-  context.globalAlpha = appear * kick
+  context.globalAlpha = appear * kick * 0.7
   context.lineWidth = Math.max(1.5, reach * 0.08 * (1 - ringProgress))
   context.strokeStyle = beatColor
   context.beginPath()
@@ -195,11 +205,11 @@ const drawSoundWave = (context: Context, width: number, height: number, outro: O
     }
   })
   context.shadowColor = beatColor
-  context.shadowBlur = reach * (0.3 + kick * 2.5)
+  context.shadowBlur = reach * (0.3 + kick * 1.6)
   context.lineWidth = Math.max(1, barGap * 0.55)
   context.strokeStyle = rainbowGradient(context, centerX - span / 2, span)
   context.stroke()
-  context.globalAlpha = appear * kick * 0.85
+  context.globalAlpha = appear * kick * 0.5
   context.shadowColor = "#ffffff"
   context.strokeStyle = "#ffffff"
   context.stroke()
@@ -224,15 +234,22 @@ export const drawEndingKaraoke = (context: Context, width: number, height: numbe
   context.textBaseline = "middle"
   context.lineJoin = "round"
   context.globalAlpha = appear * Math.min(fadeIn, fadeOut)
-  paintLineText(context, layout, y, DIM_FILL)
-  context.save()
-  context.beginPath()
-  context.rect(layout.left - layout.fontSize, y - layout.fontSize, sungX(line, layout, seconds) - layout.left + layout.fontSize, layout.fontSize * 2)
-  context.clip()
-  context.shadowColor = "rgba(255, 255, 255, 0.6)"
-  context.shadowBlur = layout.fontSize * 0.4
-  paintLineText(context, layout, y, rainbowGradient(context, layout.left, layout.totalWidth))
-  context.restore()
+  const spots = line.words.map(([start], index) => {
+    const [shakeX, shakeY] = wordShake(seconds - start, layout.fontSize)
+    return [layout.wordLefts[index] + shakeX, y + shakeY] as const
+  })
+  paintLineText(context, line, layout, spots, DIM_FILL)
+  const sungRight = sungX(line, layout, seconds)
+  if (sungRight > layout.left) {
+    context.save()
+    context.beginPath()
+    context.rect(layout.left - layout.fontSize, y - layout.fontSize, sungRight - layout.left + layout.fontSize, layout.fontSize * 2)
+    context.clip()
+    context.shadowColor = "rgba(255, 255, 255, 0.6)"
+    context.shadowBlur = layout.fontSize * 0.4
+    paintLineText(context, line, layout, spots, rainbowGradient(context, layout.left, layout.totalWidth))
+    context.restore()
+  }
   drawBall(context, line, layout, y, seconds)
   context.restore()
 }
